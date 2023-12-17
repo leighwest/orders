@@ -3,11 +3,13 @@ package com.west.orders.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 @Builder
 @Table(name = "order_items")
 public class OrderItem {
@@ -18,6 +20,7 @@ public class OrderItem {
     @ManyToOne
     private Order order;
 
+    private String productCode;
     private Long cupcakeId;
     private Integer count;
 }

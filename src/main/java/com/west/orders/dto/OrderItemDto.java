@@ -4,15 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.List;
-import java.util.UUID;
-
 @Getter
 @AllArgsConstructor
 @Builder
-public class OrderDto {
+public class OrderItemDto {
 
-    private UUID id;
+    private String productCode;
 
-    private List<OrderItemDto> cupcakes;
+    private Integer count;
 }

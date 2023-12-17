@@ -16,9 +16,9 @@ public class DataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        Cupcake chocolateCupcake = new Cupcake(1L, Cupcake.Flavour.CHOCOLATE);
-        Cupcake vanillaCupcake = new Cupcake(2L, Cupcake.Flavour.VANILLA);
-        Cupcake strawberryCupcake = new Cupcake(3L, Cupcake.Flavour.STRAWBERRY);
+        Cupcake chocolateCupcake = new Cupcake(1L, "CHOC001", Cupcake.Flavour.CHOCOLATE);
+        Cupcake vanillaCupcake = new Cupcake(2L, "VAN001", Cupcake.Flavour.VANILLA);
+        Cupcake strawberryCupcake = new Cupcake(3L, "STRAW001", Cupcake.Flavour.STRAWBERRY);
 
         cupcakeRepository.save(chocolateCupcake);
         cupcakeRepository.save(vanillaCupcake);
