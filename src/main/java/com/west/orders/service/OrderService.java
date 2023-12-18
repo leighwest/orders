@@ -46,17 +46,17 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        List<OrderItemDto> myOrderItemDtos = new ArrayList<>();
+        List<OrderItemDto> orderItemDtos = new ArrayList<>();
 
         savedOrder.getItems().forEach(cupcake ->
-                myOrderItemDtos.add(OrderItemDto.builder()
+                orderItemDtos.add(OrderItemDto.builder()
                         .productCode(cupcake.getProductCode())
                         .count(cupcake.getCount())
                         .build()));
 
         return OrderDto.builder()
                 .id(savedOrder.getUuid())
-                .cupcakes(myOrderItemDtos)
+                .cupcakes(orderItemDtos)
                 .build();
     }
 }
