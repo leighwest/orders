@@ -2,7 +2,6 @@ package com.west.orders.repository;
 
 import com.west.orders.entity.Order;
 import com.west.orders.entity.OrderItem;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -10,6 +9,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.util.List;
 import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 
 @DataJpaTest
@@ -33,9 +34,9 @@ class OrderRepositoryTest {
 
         Order savedOrder = orderRepository.save(order);
 
-        Assertions.assertThat(savedOrder).isNotNull();
-        Assertions.assertThat(savedOrder.getId()).isPositive();
-        Assertions.assertThat(savedOrder.getItems().size()).isEqualTo(1);
+        assertThat(savedOrder).isNotNull();
+        assertThat(savedOrder.getId()).isPositive();
+        assertThat(savedOrder.getItems().size()).isEqualTo(1);
     }
 
 }
