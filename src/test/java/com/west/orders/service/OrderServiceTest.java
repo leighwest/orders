@@ -1,7 +1,8 @@
 package com.west.orders.service;
 
-import com.west.orders.dto.OrderDto;
 import com.west.orders.dto.OrderItemDto;
+import com.west.orders.dto.request.InitialOrderRequestModel;
+import com.west.orders.dto.response.OrderResponseModel;
 import com.west.orders.entity.Cupcake;
 import com.west.orders.entity.Order;
 import com.west.orders.entity.OrderItem;
@@ -42,7 +43,7 @@ class OrderServiceTest {
     @Test
     public void shouldReturn_orderDto_whenSaveOrder() {
 
-        OrderDto expectedOrderDto = OrderDto.builder()
+        InitialOrderRequestModel expectedOrderDto = InitialOrderRequestModel.builder()
                 .cupcakes(List.of(OrderItemDto.builder()
                                 .productCode("CHOC001")
                                 .count(5)
@@ -86,7 +87,7 @@ class OrderServiceTest {
 
         when(orderRepository.save(any())).thenReturn(savedOrder);
 
-        OrderDto orderDto = orderService.saveOrder(expectedOrderDto);
+        OrderResponseModel orderDto = orderService.saveOrder(expectedOrderDto);
 
         assertThat(orderDto).isNotNull();
         assertThat(orderDto.getCupcakes().size()).isEqualTo(2);

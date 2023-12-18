@@ -1,7 +1,8 @@
 package com.west.orders.service;
 
-import com.west.orders.dto.OrderDto;
 import com.west.orders.dto.OrderItemDto;
+import com.west.orders.dto.request.InitialOrderRequestModel;
+import com.west.orders.dto.response.OrderResponseModel;
 import com.west.orders.entity.Cupcake;
 import com.west.orders.entity.Order;
 import com.west.orders.entity.OrderItem;
@@ -22,12 +23,12 @@ public class OrderService {
     private OrderRepository orderRepository;
     private CupcakeRepository cupcakeRepository;
 
-    public OrderDto saveOrder(OrderDto orderDto) {
+    public OrderResponseModel saveOrder(InitialOrderRequestModel customerOrder) {
 //        TODO: validate
 
         List<OrderItem> cupcakes = new ArrayList<>();
 
-        orderDto.getCupcakes().forEach(cupcake -> {
+        customerOrder.getCupcakes().forEach(cupcake -> {
                     Cupcake cupcakeEntity = cupcakeRepository.findByProductCode(cupcake.getProductCode());
                     if (cupcakeEntity == null) {
                         throw new EntityNotFoundException("Cupcake not found for product code: " + cupcake.getProductCode());
@@ -54,7 +55,7 @@ public class OrderService {
                         .count(cupcake.getCount())
                         .build()));
 
-        return OrderDto.builder()
+        return OrderResponseModel.builder()
                 .id(savedOrder.getUuid())
                 .cupcakes(orderItemDtos)
                 .build();

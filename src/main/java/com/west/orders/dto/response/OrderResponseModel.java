@@ -1,5 +1,6 @@
-package com.west.orders.dto;
+package com.west.orders.dto.response;
 
+import com.west.orders.dto.OrderItemDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,7 +11,7 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 @Builder
-public class OrderDto {
+public class OrderResponseModel {
 
     private UUID id;
 

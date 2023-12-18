@@ -1,6 +1,7 @@
 package com.west.orders.controller;
 
-import com.west.orders.dto.OrderDto;
+import com.west.orders.dto.request.InitialOrderRequestModel;
+import com.west.orders.dto.response.OrderResponseModel;
 import com.west.orders.service.OrderService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,9 +19,9 @@ public class OrderController {
     private OrderService orderService;
 
     @PostMapping("/order")
-    public ResponseEntity<OrderDto> createOrder(@RequestBody OrderDto orderDetails) {
+    public ResponseEntity<OrderResponseModel> createOrder(@RequestBody InitialOrderRequestModel orderDetails) {
 
-        OrderDto savedOrder = orderService.saveOrder(orderDetails);
+        OrderResponseModel savedOrder = orderService.saveOrder(orderDetails);
 
         return new ResponseEntity<>(savedOrder, HttpStatus.CREATED);
     }
