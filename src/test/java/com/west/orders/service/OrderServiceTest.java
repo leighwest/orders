@@ -8,6 +8,7 @@ import com.west.orders.entity.Order;
 import com.west.orders.entity.OrderItem;
 import com.west.orders.repository.CupcakeRepository;
 import com.west.orders.repository.OrderRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -43,7 +45,7 @@ class OrderServiceTest {
     @Test
     public void shouldReturn_orderDto_whenSaveOrder() {
 
-        InitialOrderRequestModel expectedOrderDto = InitialOrderRequestModel.builder()
+        InitialOrderRequestModel customerOrder = InitialOrderRequestModel.builder()
                 .cupcakes(List.of(OrderItemDto.builder()
                                 .productCode("CHOC001")
                                 .count(5)
@@ -87,7 +89,7 @@ class OrderServiceTest {
 
         when(orderRepository.save(any())).thenReturn(savedOrder);
 
-        OrderResponseModel orderDto = orderService.saveOrder(expectedOrderDto);
+        OrderResponseModel orderDto = orderService.saveOrder(customerOrder);
 
         assertThat(orderDto).isNotNull();
         assertThat(orderDto.getCupcakes().size()).isEqualTo(2);
@@ -96,4 +98,25 @@ class OrderServiceTest {
         verify(orderRepository).save(any(Order.class));
     }
 
+    @Test
+    public void shouldThrow_error_ifCupcakeNotFound() {
+        InitialOrderRequestModel customerOrder = InitialOrderRequestModel.builder()
+                .cupcakes(List.of(OrderItemDto.builder()
+                                .productCode("CHOC001")
+                                .count(5)
+                                .build(),
+                        OrderItemDto.builder()
+                                .productCode("DNE001")
+                                .count(3)
+                                .build()
+                ))
+                .build();
+
+        when(cupcakeRepository.findByProductCode(anyString())).thenReturn(null);
+
+        assertThrows(EntityNotFoundException.class, () -> orderService.saveOrder(customerOrder));
+
+        verify(cupcakeRepository, times(1)).findByProductCode(anyString());
+        verifyNoInteractions(orderRepository);
+    }
 }
