@@ -26,20 +26,7 @@ public class OrderService {
     public OrderResponseModel saveOrder(InitialOrderRequestModel customerOrder) {
 //        TODO: validate
 
-        List<OrderItem> cupcakes = new ArrayList<>();
-
-        customerOrder.getCupcakes().forEach(cupcake -> {
-                    Cupcake cupcakeEntity = cupcakeRepository.findByProductCode(cupcake.getProductCode());
-                    if (cupcakeEntity == null) {
-                        throw new EntityNotFoundException("Cupcake not found for product code: " + cupcake.getProductCode());
-                    }
-                    cupcakes.add(OrderItem.builder()
-                            .cupcakeId(cupcakeEntity.getId())
-                            .productCode(cupcake.getProductCode())
-                            .count(cupcake.getCount())
-                            .build());
-                }
-        );
+        List<OrderItem> cupcakes = convertToOrderItems(customerOrder, cupcakeRepository);
 
         Order order = Order.builder()
                 .uuid(UUID.randomUUID())
@@ -47,6 +34,33 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
+        List<OrderItemDto> orderItemDtos = convertToOrderItemDtos(savedOrder);
+
+        return OrderResponseModel.builder()
+                .id(savedOrder.getUuid())
+                .cupcakes(orderItemDtos)
+                .build();
+    }
+
+    private List<OrderItem> convertToOrderItems(InitialOrderRequestModel customerOrder, CupcakeRepository cupcakeRepository) {
+        List<OrderItem> cupcakes = new ArrayList<>();
+
+        customerOrder.getCupcakes().forEach(cupcake -> {
+            Cupcake cupcakeEntity = cupcakeRepository.findByProductCode(cupcake.getProductCode());
+            if (cupcakeEntity == null) {
+                throw new EntityNotFoundException("Cupcake not found for product code: " + cupcake.getProductCode());
+            }
+            cupcakes.add(OrderItem.builder()
+                    .cupcakeId(cupcakeEntity.getId())
+                    .productCode(cupcake.getProductCode())
+                    .count(cupcake.getCount())
+                    .build());
+        });
+
+        return cupcakes;
+    }
+
+    private List<OrderItemDto> convertToOrderItemDtos(Order savedOrder) {
         List<OrderItemDto> orderItemDtos = new ArrayList<>();
 
         savedOrder.getItems().forEach(cupcake ->
@@ -55,9 +69,6 @@ public class OrderService {
                         .count(cupcake.getCount())
                         .build()));
 
-        return OrderResponseModel.builder()
-                .id(savedOrder.getUuid())
-                .cupcakes(orderItemDtos)
-                .build();
+        return orderItemDtos;
     }
 }
