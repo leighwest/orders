@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,6 +31,7 @@ class OrderRepositoryTest {
                         .cupcakeId(1L)
                         .count(5)
                         .build()))
+                        .totalPrice(BigDecimal.valueOf(32.00))
                 .build();
 
         Order savedOrder = orderRepository.save(order);
@@ -37,6 +39,7 @@ class OrderRepositoryTest {
         assertThat(savedOrder).isNotNull();
         assertThat(savedOrder.getId()).isPositive();
         assertThat(savedOrder.getItems().size()).isEqualTo(1);
+        assertThat(savedOrder.getTotalPrice()).isEqualTo(BigDecimal.valueOf(32.00));
     }
 
 }

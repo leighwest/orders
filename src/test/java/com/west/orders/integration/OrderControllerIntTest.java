@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,6 +43,7 @@ public class OrderControllerIntTest extends AbstractionBaseTest {
                                 .count(3)
                                 .build()
                 ))
+                .totalPrice(BigDecimal.valueOf(32.00))
                 .build();
 
         OrderResponseModel orderResponse = OrderResponseModel.builder()
