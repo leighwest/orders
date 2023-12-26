@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,7 +22,11 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, nullable = false)
     private UUID uuid;  // for customer, assigned when dto first converted to entity
+
+    @Column(nullable = false)
+    private BigDecimal totalPrice;
 
     @Column(nullable = false)
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)

@@ -20,7 +20,10 @@ public class OrderItem {
     @ManyToOne
     private Order order;
 
+    @Column(unique = true, nullable = false)
     private String productCode;
+    @Column(unique = true, nullable = false)
     private Long cupcakeId;
+    @Column(nullable = false)
     private Integer count;
 }
