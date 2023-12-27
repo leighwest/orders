@@ -16,7 +16,7 @@ import static org.mockito.Mockito.times;
 
 class PaymentDispatchServiceTest {
 
-    private KafkaTemplate kafkaProducerMock;
+    private KafkaTemplate<String, Object> kafkaProducerMock;
 
     private PaymentDispatchService paymentDispatchService;
 
