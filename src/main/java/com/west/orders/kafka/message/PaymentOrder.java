@@ -1,11 +1,11 @@
 package com.west.orders.kafka.message;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 
 import java.math.BigDecimal;
 
-@Data
+@Getter
 @Builder
 public class PaymentOrder {
 
