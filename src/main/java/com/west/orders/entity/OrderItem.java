@@ -25,5 +25,5 @@ public class OrderItem {
     @Column(unique = true, nullable = false)
     private Long cupcakeId;
     @Column(nullable = false)
-    private Integer count;
+    private int count;
 }

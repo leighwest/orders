@@ -18,7 +18,7 @@ public class PaymentOrder {
 
     private final Long OrderId;
 
-    BigDecimal totalPrice;
+    private BigDecimal totalPrice;
 
-    PaymentStatus paymentStatus;
+    private PaymentStatus paymentStatus;
 }

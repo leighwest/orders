@@ -11,5 +11,5 @@ public class OrderItemDto {
 
     private String productCode;
 
-    private Integer count;
+    private int count;
 }
