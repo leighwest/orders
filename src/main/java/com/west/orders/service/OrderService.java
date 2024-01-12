@@ -7,7 +7,7 @@ import com.west.orders.entity.Cupcake;
 import com.west.orders.entity.Order;
 import com.west.orders.entity.OrderItem;
 import com.west.orders.kafka.message.PaymentOrder;
-import com.west.orders.kafka.service.PaymentDispatchService;
+import com.west.orders.kafka.publisher.PaymentRequestKafkaPublisher;
 import com.west.orders.repository.CupcakeRepository;
 import com.west.orders.repository.OrderRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -26,7 +26,7 @@ public class OrderService {
 
     private OrderRepository orderRepository;
     private CupcakeRepository cupcakeRepository;
-    private PaymentDispatchService paymentDispatchService;
+    private PaymentRequestKafkaPublisher paymentRequestKafkaPublisher;
 
     public OrderResponseModel saveOrder(InitialOrderRequestModel customerOrder) {
 //        TODO: validate
@@ -49,7 +49,7 @@ public class OrderService {
                 .build();
 
         try {
-            paymentDispatchService.process(paymentOrder);
+            paymentRequestKafkaPublisher.process(paymentOrder);
         } catch (Exception e) {
             log.error("Error while sending payment order message to kafka with order ID {}, error: {}",
                     order.getId(), e.getMessage());

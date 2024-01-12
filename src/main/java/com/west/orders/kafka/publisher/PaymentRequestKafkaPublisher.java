@@ -1,4 +1,4 @@
-package com.west.orders.kafka.service;
+package com.west.orders.kafka.publisher;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +10,7 @@ import com.west.orders.kafka.message.PaymentOrder;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PaymentDispatchService {
+public class PaymentRequestKafkaPublisher {
 
     private static final String ORDER_CREATED_TOPIC = "order.created";
 

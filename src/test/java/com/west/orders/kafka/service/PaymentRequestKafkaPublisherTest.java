@@ -1,6 +1,7 @@
 package com.west.orders.kafka.service;
 
 import com.west.orders.kafka.message.PaymentOrder;
+import com.west.orders.kafka.publisher.PaymentRequestKafkaPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -17,16 +18,16 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
 
-class PaymentDispatchServiceTest {
+class PaymentRequestKafkaPublisherTest {
 
     private KafkaTemplate<String, Object> kafkaProducerMock;
 
-    private PaymentDispatchService paymentDispatchService;
+    private PaymentRequestKafkaPublisher paymentRequestKafkaPublisher;
 
     @BeforeEach
     void setUp() {
         kafkaProducerMock = mock(KafkaTemplate.class);
-        paymentDispatchService = new PaymentDispatchService(kafkaProducerMock);
+        paymentRequestKafkaPublisher = new PaymentRequestKafkaPublisher(kafkaProducerMock);
     }
 
     @Test
@@ -37,7 +38,7 @@ class PaymentDispatchServiceTest {
 
         PaymentOrder paymentOrder = buildPaymentOrder();
 
-        paymentDispatchService.process(paymentOrder);
+        paymentRequestKafkaPublisher.process(paymentOrder);
 
         verify(kafkaProducerMock, times(1)).send(eq("order.created"), any(PaymentOrder.class));
     }
@@ -49,7 +50,7 @@ class PaymentDispatchServiceTest {
         when(kafkaProducerMock.send(anyString(), any(PaymentOrder.class))).thenReturn(mock(CompletableFuture.class));
         doThrow(new RuntimeException("order created producer failure")).when(kafkaProducerMock).send(eq("order.created"), any(PaymentOrder.class));
 
-        Exception exception = assertThrows(RuntimeException.class, () -> paymentDispatchService.process(paymentOrder));
+        Exception exception = assertThrows(RuntimeException.class, () -> paymentRequestKafkaPublisher.process(paymentOrder));
 
         verify(kafkaProducerMock, times(1)).send(eq("order.created"), any(PaymentOrder.class));
         assertThat(exception.getMessage(), equalTo("order created producer failure"));
