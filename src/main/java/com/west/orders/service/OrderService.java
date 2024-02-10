@@ -6,8 +6,9 @@ import com.west.orders.dto.response.OrderResponseModel;
 import com.west.orders.entity.Cupcake;
 import com.west.orders.entity.Order;
 import com.west.orders.entity.OrderItem;
-import com.west.orders.kafka.message.PaymentOrder;
-import com.west.orders.kafka.publisher.PaymentRequestKafkaPublisher;
+import com.west.orders.kafka.message.DispatchOrder;
+import com.west.orders.kafka.message.DispatchOrder.DispatchStatus;
+import com.west.orders.kafka.publisher.OrderRequestKafkaPublisher;
 import com.west.orders.repository.CupcakeRepository;
 import com.west.orders.repository.OrderRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -26,7 +27,7 @@ public class OrderService {
 
     private OrderRepository orderRepository;
     private CupcakeRepository cupcakeRepository;
-    private PaymentRequestKafkaPublisher paymentRequestKafkaPublisher;
+    private OrderRequestKafkaPublisher orderRequestKafkaPublisher;
 
     public OrderResponseModel saveOrder(InitialOrderRequestModel customerOrder) {
 //        TODO: validate
@@ -42,16 +43,15 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
 
         // build order kafka message and send
-        PaymentOrder paymentOrder = PaymentOrder.builder()
+        DispatchOrder dispatchOrder = DispatchOrder.builder()
                 .OrderId(order.getId())
-                .totalPrice(order.getTotalPrice())
-                .paymentStatus(PaymentOrder.PaymentStatus.PENDING)
+                .dispatchStatus(DispatchStatus.PENDING)
                 .build();
 
         try {
-            paymentRequestKafkaPublisher.process(paymentOrder);
+            orderRequestKafkaPublisher.process(dispatchOrder);
         } catch (Exception e) {
-            log.error("Error while sending payment order message to kafka with order ID {}, error: {}",
+            log.error("Error while sending dispatch order message to kafka with order ID {}, error: {}",
                     order.getId(), e.getMessage());
         }
 
