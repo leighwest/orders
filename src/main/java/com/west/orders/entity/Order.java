@@ -26,6 +26,9 @@ public class Order {
     private UUID uuid;  // for customer, assigned when dto first converted to entity
 
     @Column(nullable = false)
+    private Long customerOrderRef;
+
+    @Column(nullable = false)
     private BigDecimal totalPrice;
 
     @Column(nullable = false)

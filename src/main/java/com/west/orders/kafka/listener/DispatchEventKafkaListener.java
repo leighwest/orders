@@ -26,8 +26,7 @@ public class DispatchEventKafkaListener {
 
         if (payload.getDispatchStatus() == DispatchStatus.COMPLETED) {
             log.info("Received order successfully dispatched event for order id: {}", payload.getOrderId());
-            // TODO: should I send a Kafka message to the email service or should the email service just listen to the dispatch microservice? If the latter then there is no point in having a listener in this service.
-
+            // TODO: send order dispatched email
         } else {
             // TODO: handle alternative dispatch status scenarios
         }

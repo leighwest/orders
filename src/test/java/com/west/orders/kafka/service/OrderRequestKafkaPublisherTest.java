@@ -44,7 +44,7 @@ class OrderRequestKafkaPublisherTest {
     }
 
     @Test
-    public void shouldThrowException_when_orderCreatedFailsProducerFails() {
+    public void shouldThrowException_when_orderCreatedProducerFails() {
         DispatchOrder dispatchOrder = buildDispatchOrder();
 
         when(kafkaProducerMock.send(anyString(), any(DispatchOrder.class))).thenReturn(mock(CompletableFuture.class));
