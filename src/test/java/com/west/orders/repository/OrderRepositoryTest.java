@@ -28,6 +28,7 @@ class OrderRepositoryTest {
 
         Order order = Order.builder()
                 .uuid(UUID.randomUUID())
+                .customerOrderRef(21234412L)
                 .items(List.of(OrderItem.builder()
                         .productCode("CHOC001")
                         .cupcakeId(1L)
@@ -40,6 +41,7 @@ class OrderRepositoryTest {
 
         assertThat(savedOrder).isNotNull();
         assertThat(savedOrder.getId()).isPositive();
+        assertThat(savedOrder.getCustomerOrderRef()).isEqualTo(21234412L);
         assertThat(savedOrder.getItems().size()).isEqualTo(1);
         assertThat(savedOrder.getTotalPrice()).isEqualTo(BigDecimal.valueOf(32.00));
     }
