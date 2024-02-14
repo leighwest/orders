@@ -8,6 +8,7 @@ import com.west.orders.entity.Order;
 import com.west.orders.entity.OrderItem;
 import com.west.orders.repository.CupcakeRepository;
 import com.west.orders.repository.OrderRepository;
+import com.west.orders.service.notification.handler.OrderReceivedEmailSender;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,8 @@ class OrderServiceTest {
     private CupcakeRepository cupcakeRepository;
     @Mock
     private OrderRepository orderRepository;
+    @Mock
+    private OrderReceivedEmailSender emailSender;
 
     @InjectMocks
     private OrderService orderService;
@@ -86,6 +89,7 @@ class OrderServiceTest {
 
         when(cupcakeRepository.findByProductCode("CHOC001")).thenReturn(chocolateCupcake);
         when(cupcakeRepository.findByProductCode("VAN001")).thenReturn(vanillaCupcake);
+        doNothing().when(emailSender).send(any());
 
         when(orderRepository.save(any())).thenReturn(savedOrder);
 
