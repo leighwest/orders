@@ -1,5 +1,5 @@
-<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -16,7 +16,7 @@
                         <table style="border-collapse: collapse; mso-table-lspace:0; mso-table-rspace:0; width: 100%">
                             <tr>
                                 <td>
-                                    <p style="margin: 0.5em 0; line-height: 1.5em">Dear <span th:text="${metadata.givenName}">CUSTOMER NAME</span>,</p>
+                                    <p style="margin: 0.5em 0; line-height: 1.5em">Dear <span>Leigh</span>,</p>
                                 </td>
                             </tr>
                             <tr>
@@ -24,7 +24,7 @@
                                     <p style="margin: 0.5em 0; line-height: 1.5em">Thank you for your order.</p>
                                     <p style="margin: 0.5em 0; line-height: 1.5em">Our expert cupcake makers will start baking your cupcakes straight away!</p>
                                     <p style="margin: 0.5em 0; line-height: 1.5em">We'll send you an update once your order is shipped.</p>
-                                    <p style="margin: 0.5em 0; line-height: 1.5em">Your order reference is <span th:text="${metadata.orderRef}">ORDER REF</span>.</p>
+                                    <p style="margin: 0.5em 0; line-height: 1.5em">Your order reference is <span>1234</span>.</p>
                                 </td>
                             </tr>
                         </table>
