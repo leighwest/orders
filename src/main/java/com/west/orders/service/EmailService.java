@@ -43,6 +43,4 @@ public class EmailService {
 
         return templateEngine.process(templatePath, context);
     }
-
-
 }
