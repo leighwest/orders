@@ -4,7 +4,7 @@ import com.west.orders.entity.Order;
 import com.west.orders.service.EmailService;
 import com.west.orders.service.EmailTemplate;
 import com.west.orders.service.model.Mail;
-import com.west.orders.service.model.OrderReceivedMailMetadata;
+import com.west.orders.service.model.OrderDispatchedMailMetadata;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 @AllArgsConstructor
 @Slf4j
-public class OrderReceivedEmailSender {
+public class OrderDispatchedEmailSender {
 
     private final EmailService emailService;
 
@@ -23,25 +23,25 @@ public class OrderReceivedEmailSender {
         try {
             emailService.sendEmail(mail);
         } catch (RuntimeException ex) {
-            log.error("Error sending order received email for order ID: {}. Error message: {}", order.getId(), ex.getMessage());
+            log.error("Error sending order dispatched email for order ID: {}. Error message: {}", order.getId(), ex.getMessage());
         } catch (MessagingException ex) {
-            log.error("Error sending order received email for order ID: {}. MessagingException: {}", order.getId(), ex.getMessage());
+            log.error("Error sending order dispatched email for order ID: {}. MessagingException: {}", order.getId(), ex.getMessage());
             throw new RuntimeException(ex);
         }
     }
 
     private Mail getMail(Order order) {
 
-        OrderReceivedMailMetadata metadata = new OrderReceivedMailMetadata(
+        OrderDispatchedMailMetadata metadata = new OrderDispatchedMailMetadata(
                  "Leigh", order.getCustomerOrderRef()
         );
 
         String emailBody = emailService.getOrderEmail(
-                EmailTemplate.ORDER_RECEIVED_EMAIL.getTemplateName(),
+                EmailTemplate.ORDER_DISPATCHED_EMAIL.getTemplateName(),
                 metadata
         );
 
-        return new Mail("leighwest@hotmail.com", "leigh.west.aep@gmail.com", "We've got your cupcake order!",
+        return new Mail("leighwest@hotmail.com", "leigh.west.aep@gmail.com", "Your cupcakes are on their way!",
                 emailBody, true);
     }
 }
