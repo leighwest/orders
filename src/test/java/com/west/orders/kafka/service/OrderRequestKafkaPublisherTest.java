@@ -29,14 +29,14 @@ class OrderRequestKafkaPublisherTest {
     @Test
     public void process_Success() throws Exception {
 
-        when(kafkaProducerMock.send(anyString(), any(DispatchOrder.class)))
+        when(kafkaProducerMock.send(anyString(), anyString(), any(DispatchOrder.class)))
                 .thenReturn(mock(CompletableFuture.class));
 
         DispatchOrder dispatchOrder = buildDispatchOrder();
 
         orderRequestKafkaPublisher.process(dispatchOrder);
 
-        verify(kafkaProducerMock, times(1)).send(eq("order.created"), any(DispatchOrder.class));
+        verify(kafkaProducerMock, times(1)).send(eq("order.created"), any(), any(DispatchOrder.class));
     }
 
     @Test

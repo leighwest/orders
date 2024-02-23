@@ -18,6 +18,6 @@ public class OrderRequestKafkaPublisher {
 
     public void process(DispatchOrder dispatchOrder) throws Exception {
         log.info("Sending order dispatch request kafka message for order ID: {}", dispatchOrder.getOrderId());
-        kafkaProducer.send(ORDER_CREATED_TOPIC, dispatchOrder).get();
+        kafkaProducer.send(ORDER_CREATED_TOPIC, dispatchOrder.getOrderId().toString(), dispatchOrder).get();
     }
 }

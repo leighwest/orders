@@ -23,7 +23,7 @@ public class DispatchEventKafkaListener {
     private final OrderRepository orderRepository;
 
     @KafkaListener(
-            id = "orderConsumerClient",
+            id = "dispatchConsumerClient",
             topics = "dispatch.processed",
             groupId = "dispatch.processed.consumer",
             containerFactory = "kafkaListenerContainerFactory"
