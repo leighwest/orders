@@ -18,9 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -70,33 +70,26 @@ public class OrderService {
     }
 
     private List<OrderItem> convertToOrderItems(InitialOrderRequestModel customerOrder, CupcakeRepository cupcakeRepository) {
-        List<OrderItem> cupcakes = new ArrayList<>();
-
-        customerOrder.getCupcakes().forEach(cupcake -> {
-            Cupcake cupcakeEntity = cupcakeRepository.findByProductCode(cupcake.getProductCode());
+        return customerOrder.getCupcakes().stream().map(cupcakeRequest -> {
+            Cupcake cupcakeEntity = cupcakeRepository.findByProductCode(cupcakeRequest.getProductCode());
             if (cupcakeEntity == null) {
-                throw new EntityNotFoundException("Cupcake not found for product code: " + cupcake.getProductCode());
+                throw new EntityNotFoundException("Cupcake not found for product code: " + cupcakeRequest.getProductCode());
             }
-            cupcakes.add(OrderItem.builder()
+            return OrderItem.builder()
                     .cupcakeId(cupcakeEntity.getId())
-                    .productCode(cupcake.getProductCode())
-                    .count(cupcake.getCount())
-                    .build());
-        });
-
-        return cupcakes;
+                    .productCode(cupcakeRequest.getProductCode())
+                    .count(cupcakeRequest.getCount())
+                    .build();
+        }).collect(Collectors.toList());
     }
 
     private List<OrderItemDto> convertToOrderItemDtos(Order savedOrder) {
-        List<OrderItemDto> orderItemDtos = new ArrayList<>();
-
-        savedOrder.getItems().forEach(cupcake ->
-                orderItemDtos.add(OrderItemDto.builder()
-                        .productCode(cupcake.getProductCode())
-                        .count(cupcake.getCount())
-                        .build()));
-
-        return orderItemDtos;
+        return savedOrder.getItems().stream().map(cupcake ->
+             OrderItemDto.builder()
+                    .productCode(cupcake.getProductCode())
+                    .count(cupcake.getCount())
+                    .build()
+        ).collect(Collectors.toList());
     }
 
     private Long buildCustomerRef() {
