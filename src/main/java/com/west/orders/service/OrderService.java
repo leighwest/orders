@@ -73,7 +73,7 @@ public class OrderService {
         return customerOrder.getCupcakes().stream().map(cupcakeRequest -> {
             Cupcake cupcakeEntity = cupcakeRepository.findByProductCode(cupcakeRequest.getProductCode());
             if (cupcakeEntity == null) {
-                throw new EntityNotFoundException("Cupcake not found for product code: " + cupcakeRequest.getProductCode());
+                throw new EntityNotFoundException("No cupcake found with product code: " + cupcakeRequest.getProductCode());
             }
             return OrderItem.builder()
                     .cupcakeId(cupcakeEntity.getId())

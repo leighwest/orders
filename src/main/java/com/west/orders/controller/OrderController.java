@@ -21,8 +21,6 @@ public class OrderController {
     @PostMapping("/order")
     public ResponseEntity<OrderResponseModel> createOrder(@RequestBody InitialOrderRequestModel orderDetails) {
 
-
-        // FIXME: need to either return optional / wrap this in try/catch to handle cupcake not found exception
         OrderResponseModel savedOrder = orderService.saveOrder(orderDetails);
 
         return new ResponseEntity<>(savedOrder, HttpStatus.CREATED);
