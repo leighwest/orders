@@ -43,7 +43,7 @@ class OrderRequestKafkaPublisherTest {
     public void shouldThrowException_when_orderCreatedProducerFails() {
         DispatchOrder dispatchOrder = buildDispatchOrder();
 
-        when(kafkaProducerMock.send(anyString(), any(DispatchOrder.class))).thenReturn(mock(CompletableFuture.class));
+        when(kafkaProducerMock.send(anyString(), anyString(), any(DispatchOrder.class))).thenReturn(mock(CompletableFuture.class));
         doThrow(new RuntimeException("order created producer failure")).when(kafkaProducerMock).send(eq("order.created"), any(DispatchOrder.class));
 
         Exception exception = assertThrows(RuntimeException.class, () -> orderRequestKafkaPublisher.process(dispatchOrder));
