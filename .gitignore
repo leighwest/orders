@@ -35,4 +35,5 @@ build/
 
 ### Deployment ###
 */terraform.tfvars
+*/mykey*
 
