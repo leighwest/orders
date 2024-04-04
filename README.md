@@ -2,7 +2,7 @@
 
 This Java Spring Boot web application allows users to place orders for cupcakes using a RESTful API documented with Swagger.  The client is routed to the Swagger UI by an NGINX reverse proxy.
 
-The application uses a microservice architecture which communicates with a distribution application using Apache Kakfa.  
+The application uses a microservice architecture which communicates with an order distribution application using Apache Kakfa.  
 
 The customer receives order confirmation and dispatch notification emails using Amazon's Simple Email Service (SES).
 
