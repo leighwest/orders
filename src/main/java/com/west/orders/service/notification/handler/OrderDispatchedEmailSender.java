@@ -41,7 +41,7 @@ public class OrderDispatchedEmailSender {
                 metadata
         );
 
-        return new Mail("leighwest@hotmail.com", "leigh.west.aep@gmail.com", "Your cupcakes are on their way!",
+        return new Mail("leighwest@hotmail.com", "cupcake-orders@leighwest.dev", "Your cupcakes are on their way!",
                 emailBody, true);
     }
 }

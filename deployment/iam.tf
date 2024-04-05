@@ -12,13 +12,13 @@ resource "aws_iam_access_key" "smtp_credentials" {
 }
 
 resource "aws_ssm_parameter" "smtp_username" {
-  name  = "orders_smtp_username"
+  name  = "orders_iam_access_key_id"
   type  = "String"
   value = aws_iam_access_key.smtp_credentials.id
 }
 
 resource "aws_ssm_parameter" "smtp_password" {
-  name  = "orders_smtp_password"
+  name  = "orders_iam_secret_access_key"
   type  = "SecureString"
   value = aws_iam_access_key.smtp_credentials.secret
 }
