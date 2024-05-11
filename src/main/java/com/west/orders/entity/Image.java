@@ -6,22 +6,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Getter
 @Entity
-@Table(name = "cupcakes")
-public class Cupcake {
-
-    public enum Flavour {
-        CHOCOLATE,
-        VANILLA,
-        LEMON
-    }
-
+@Table(name = "images")
+public class Image {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,14 +20,9 @@ public class Cupcake {
     @Column(unique = true, nullable = false)
     private String productCode;
 
-    @Column(unique = true, nullable = false)
-    @Enumerated(EnumType.STRING)
-    private Flavour flavour;
-
     @Column(nullable = false)
-    private BigDecimal price;
+    private String bucketName;
 
-    @OneToOne
-    @JoinColumn(name = "image", referencedColumnName = "productCode")
-    private Image image;
+    @Column(unique = true, nullable = false)
+    private String objectKey;
 }

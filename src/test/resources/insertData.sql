@@ -13,13 +13,4 @@ CREATE TABLE cupcakes (
 
 INSERT INTO cupcakes (productCode, flavour) VALUES ('CHOC001', 'CHOCOLATE');
 INSERT INTO cupcakes (productCode, flavour) VALUES ('VAN001', 'VANILLA');
-INSERT INTO cupcakes (productCode, flavour) VALUES ('STRAW001', 'STRAWBERRY');
-
-
-
-
---
---
---     Cupcake chocolateCupcake = new Cupcake(1L, "CHOC001", Cupcake.Flavour.CHOCOLATE);
--- Cupcake vanillaCupcake = new Cupcake(2L, "VAN001", Cupcake.Flavour.VANILLA);
---         Cupcake strawberryCupcake = new Cupcake(3L, "STRAW001", Cupcake.Flavour.STRAWBERRY);
+INSERT INTO cupcakes (productCode, flavour) VALUES ('LEM001', 'LEMON');
