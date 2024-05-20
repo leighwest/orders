@@ -25,7 +25,6 @@ class CupcakeRepositoryTest {
     public void shouldReturn_cupcake_whenFindByProductCode() {
 
         Image chocolateCupcakeImage = new Image(1L, "CHOC001", "bucketName", "objectKey");
-
         Cupcake chocolateCupcake = new Cupcake(1L, "CHOC001", Cupcake.Flavour.CHOCOLATE,
                 BigDecimal.valueOf(3.50), chocolateCupcakeImage);
         cupcakeRepository.save(chocolateCupcake);
