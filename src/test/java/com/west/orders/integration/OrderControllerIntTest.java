@@ -4,15 +4,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.west.orders.dto.OrderItemDto;
 import com.west.orders.dto.request.InitialOrderRequestModel;
 import com.west.orders.dto.response.OrderResponseModel;
+import com.west.orders.kafka.publisher.OrderRequestKafkaPublisher;
+import com.west.orders.service.EmailService;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -29,6 +39,19 @@ public class OrderControllerIntTest extends AbstractionBaseTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockBean
+    private EmailService emailService;
+
+    @MockBean
+    private OrderRequestKafkaPublisher orderRequestKafkaPublisher;
+
+    @DynamicPropertySource
+    static void dynamicProperties(DynamicPropertyRegistry registry) {
+        registry.add("AWS_ACCESS_KEY", () -> "test-access-key");
+        registry.add("AWS_SECRET_KEY", () -> "test-secret-key");
+        registry.add("KAFKA_HOST", () -> "9999");
+    }
 
     @Test
     public void shouldReturn_OrderResponseModel_whenCustomerSubmitsOrder() throws Exception {
@@ -67,5 +90,9 @@ public class OrderControllerIntTest extends AbstractionBaseTest {
                         CoreMatchers.is(orderResponse.getCupcakes().get(0).getProductCode())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.cupcakes[0].count",
                         CoreMatchers.is(orderResponse.getCupcakes().get(0).getCount())));
+
+        verify(orderRequestKafkaPublisher, times(1)).process(any());
+
+        verify(emailService, times(1)).sendEmail(any());
     }
 }

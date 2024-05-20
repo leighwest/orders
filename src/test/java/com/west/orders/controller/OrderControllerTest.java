@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 
-@WebMvcTest
+@WebMvcTest(OrderController.class)
 class OrderControllerTest {
 
     @Autowired

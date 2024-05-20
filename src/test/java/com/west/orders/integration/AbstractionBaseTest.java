@@ -5,13 +5,18 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
+
 public abstract class AbstractionBaseTest {
 
     static final MySQLContainer<?> MY_SQL_CONTAINER;
 
     static {
-        MY_SQL_CONTAINER = new MySQLContainer<>(DockerImageName.parse("mysql:latest"))
-                .withDatabaseName("order");
+        MY_SQL_CONTAINER = new MySQLContainer<>(DockerImageName.parse("mysql:8.2.0"))
+                .withDatabaseName("order")
+                .withUsername("root")
+                .withPassword("password")
+                .withEnv("MYSQL_USER", "MYSQL_ALLOW_EMPTY_PASSWORD")
+                .withCommand("--skip-innodb-use-native-aio");
 
         MY_SQL_CONTAINER.start();
     }
