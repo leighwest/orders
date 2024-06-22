@@ -6,10 +6,13 @@ import com.west.orders.dto.response.OrderResponseModel;
 import com.west.orders.entity.Cupcake;
 import com.west.orders.entity.Order;
 import com.west.orders.entity.OrderItem;
+import com.west.orders.exception.ValidationError;
+import com.west.orders.exception.ValidationException;
 import com.west.orders.repository.CupcakeRepository;
 import com.west.orders.repository.OrderRepository;
 import com.west.orders.service.notification.handler.OrderReceivedEmailSender;
-import jakarta.persistence.EntityNotFoundException;
+import com.west.orders.validation.OrderSubmissionValidationProcessor;
+import com.west.orders.validation.ValidationContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +36,8 @@ class OrderServiceTest {
     private CupcakeRepository cupcakeRepository;
     @Mock
     private OrderRepository orderRepository;
+    @Mock
+    private OrderSubmissionValidationProcessor validationProcessor;
     @Mock
     private OrderReceivedEmailSender emailSender;
 
@@ -116,11 +121,14 @@ class OrderServiceTest {
                 ))
                 .build();
 
-        when(cupcakeRepository.findByProductCode(anyString())).thenReturn(null);
+        List<String> productCodes = List.of("CHOC001", "LEM001", "VAN001");
 
-        assertThrows(EntityNotFoundException.class, () -> orderService.saveOrder(customerOrder));
+        when(cupcakeRepository.findAllProductCodes()).thenReturn(productCodes);
+        doThrow(new ValidationException(List.of(new ValidationError("CODE", "message")))).when(validationProcessor).validate(any(ValidationContext.class));
 
-        verify(cupcakeRepository, times(1)).findByProductCode(anyString());
+        assertThrows(ValidationException.class, () -> orderService.saveOrder(customerOrder));
+
+        verify(cupcakeRepository, times(1)).findAllProductCodes();
         verifyNoInteractions(orderRepository);
     }
 }
