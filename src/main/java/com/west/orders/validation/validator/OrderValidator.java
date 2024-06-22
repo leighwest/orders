@@ -8,6 +8,8 @@ import com.west.orders.validation.ValidationContextDataType;
 import java.util.List;
 import java.util.Optional;
 
+import static com.west.orders.validation.validator.CupcakeErrorCode.CUPCAKE_ORDER_ERROR;
+
 public class OrderValidator implements Validator{
     @Override
     public Optional<ValidationError> validate(ValidationContext context) {
@@ -17,12 +19,12 @@ public class OrderValidator implements Validator{
 
         for (OrderItemDto orderItem : orderItems) {
             if (!isValidProductCode(orderItem.getProductCode(), serverProductCodes)) {
-                return Optional.of(new ValidationError(CupcakeErrorCode.CUPCAKE_ORDER_ERROR.getError(), "Invalid cupcake flavour: " +
+                return Optional.of(new ValidationError(CUPCAKE_ORDER_ERROR.getError(), "Invalid cupcake flavour: " +
                         orderItem.getProductCode()));
             }
 
             if (orderItem.getCount() < 1) {
-                return Optional.of(new ValidationError(CupcakeErrorCode.CUPCAKE_ORDER_ERROR.getError(), "Invalid cupcake quantity. " +
+                return Optional.of(new ValidationError(CUPCAKE_ORDER_ERROR.getError(), "Invalid cupcake quantity. " +
                         "Quantity must be at least 1"));
             }
         }

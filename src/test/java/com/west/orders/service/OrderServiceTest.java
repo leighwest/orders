@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.UUID;
 
+import static com.west.orders.validation.validator.CupcakeErrorCode.CUPCAKE_ORDER_ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -124,7 +125,7 @@ class OrderServiceTest {
         List<String> productCodes = List.of("CHOC001", "LEM001", "VAN001");
 
         when(cupcakeRepository.findAllProductCodes()).thenReturn(productCodes);
-        doThrow(new ValidationException(List.of(new ValidationError("CODE", "message")))).when(validationProcessor).validate(any(ValidationContext.class));
+        doThrow(new ValidationException(List.of(new ValidationError(CUPCAKE_ORDER_ERROR.getError(), "message")))).when(validationProcessor).validate(any(ValidationContext.class));
 
         assertThrows(ValidationException.class, () -> orderService.saveOrder(customerOrder));
 
