@@ -12,6 +12,9 @@ import com.west.orders.kafka.publisher.OrderRequestKafkaPublisher;
 import com.west.orders.repository.CupcakeRepository;
 import com.west.orders.repository.OrderRepository;
 import com.west.orders.service.notification.handler.OrderReceivedEmailSender;
+import com.west.orders.validation.OrderSubmissionValidationProcessor;
+import com.west.orders.validation.ValidationContext;
+import com.west.orders.validation.ValidationContextDataType;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -29,11 +33,20 @@ public class OrderService {
 
     private OrderRepository orderRepository;
     private CupcakeRepository cupcakeRepository;
+    private OrderSubmissionValidationProcessor validationProcessor;
     private OrderRequestKafkaPublisher orderRequestKafkaPublisher;
     private OrderReceivedEmailSender emailSender;
 
     public OrderResponseModel saveOrder(InitialOrderRequestModel customerOrder) {
-//        TODO: validate
+
+        List<String> productCodes = cupcakeRepository.findAllProductCodes();
+
+        Map<ValidationContextDataType, Object> map = Map.of(
+                ValidationContextDataType.PRODUCT_CODES, productCodes,
+                ValidationContextDataType.ORDER_ITEMS, customerOrder.getCupcakes()
+        );
+
+        validationProcessor.validate(new ValidationContext(map));
 
         List<OrderItem> cupcakes = convertToOrderItems(customerOrder, cupcakeRepository);
 
@@ -73,7 +86,8 @@ public class OrderService {
         return customerOrder.getCupcakes().stream().map(cupcakeRequest -> {
             Cupcake cupcakeEntity = cupcakeRepository.findByProductCode(cupcakeRequest.getProductCode());
             if (cupcakeEntity == null) {
-                throw new EntityNotFoundException("No cupcake found with product code: " + cupcakeRequest.getProductCode());
+                log.error("No cupcake found with product code: " + cupcakeRequest.getProductCode());
+                throw new EntityNotFoundException("An internal error occurred. Please try again later.");
             }
             return OrderItem.builder()
                     .cupcakeId(cupcakeEntity.getId())
