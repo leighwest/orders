@@ -74,7 +74,6 @@ public class OrderControllerIntTest extends AbstractionBaseTest {
                                 .count(3)
                                 .build()
                 ))
-                .totalPrice(BigDecimal.valueOf(32.00))
                 .build();
 
         OrderResponseModel orderResponse = OrderResponseModel.builder()
@@ -117,7 +116,6 @@ public class OrderControllerIntTest extends AbstractionBaseTest {
                                 .count(3)
                                 .build()
                 ))
-                .totalPrice(BigDecimal.valueOf(32.00))
                 .build();
 
        mockMvc.perform(post("/order")
@@ -129,7 +127,7 @@ public class OrderControllerIntTest extends AbstractionBaseTest {
 
         Order savedOrder = orders.get(0);
 
-        assertThat(savedOrder.getTotalPrice()).isEqualByComparingTo(BigDecimal.valueOf(32.00));
+        assertThat(savedOrder.getTotalPrice()).isEqualByComparingTo(BigDecimal.valueOf(28.00));
         assertThat(savedOrder.getItems()).hasSize(2);
         assertThat(savedOrder.getItems().get(0).getProductCode()).isEqualTo("CHOC001");
         assertThat(savedOrder.getItems().get(0).getCount()).isEqualTo(5);

@@ -13,19 +13,25 @@ import com.west.orders.repository.OrderRepository;
 import com.west.orders.service.notification.handler.OrderReceivedEmailSender;
 import com.west.orders.validation.OrderSubmissionValidationProcessor;
 import com.west.orders.validation.ValidationContext;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static com.west.orders.validation.validator.CupcakeErrorCode.CUPCAKE_ORDER_ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -45,37 +51,23 @@ class OrderServiceTest {
     @InjectMocks
     private OrderService orderService;
 
-    @BeforeEach
-    public void setup() {
-
-
-    }
-
     @Test
     public void shouldReturn_orderDto_whenSaveOrder() {
 
-        InitialOrderRequestModel customerOrder = InitialOrderRequestModel.builder()
-                .cupcakes(List.of(OrderItemDto.builder()
-                                .productCode("CHOC001")
-                                .count(5)
-                                .build(),
-                        OrderItemDto.builder()
-                                .productCode("VAN001")
-                                .count(3)
-                                .build()
-                ))
-                .build();
+        InitialOrderRequestModel customerOrder = buildInitialOrderRequestModel("VAN001");
 
         Cupcake chocolateCupcake = Cupcake.builder()
                 .id(1L)
                 .productCode("CHOC001")
                 .flavour(Cupcake.Flavour.CHOCOLATE)
+                .unitPrice(BigDecimal.valueOf(3.5))
                 .build();
 
         Cupcake vanillaCupcake = Cupcake.builder()
                 .id(2L)
                 .productCode("VAN001")
                 .flavour(Cupcake.Flavour.VANILLA)
+                .unitPrice(BigDecimal.valueOf(3.00))
                 .build();
 
         Order savedOrder = Order.builder()
@@ -85,11 +77,13 @@ class OrderServiceTest {
                                 .productCode("CHOC001")
                                 .cupcakeId(1L)
                                 .count(5)
+                                .unitPrice(BigDecimal.valueOf(3.50))
                                 .build(),
                         OrderItem.builder()
                                 .productCode("VAN001")
                                 .cupcakeId(2L)
                                 .count(3)
+                                .unitPrice(BigDecimal.valueOf(3.00))
                                 .build()))
                 .build();
 
@@ -110,17 +104,7 @@ class OrderServiceTest {
 
     @Test
     public void shouldThrow_error_ifCupcakeNotFound() {
-        InitialOrderRequestModel customerOrder = InitialOrderRequestModel.builder()
-                .cupcakes(List.of(OrderItemDto.builder()
-                                .productCode("CHOC001")
-                                .count(5)
-                                .build(),
-                        OrderItemDto.builder()
-                                .productCode("DNE001")
-                                .count(3)
-                                .build()
-                ))
-                .build();
+        InitialOrderRequestModel customerOrder = buildInitialOrderRequestModel("DNE001");
 
         List<String> productCodes = List.of("CHOC001", "LEM001", "VAN001");
 
@@ -131,5 +115,84 @@ class OrderServiceTest {
 
         verify(cupcakeRepository, times(1)).findAllProductCodes();
         verifyNoInteractions(orderRepository);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideValuesForOrderPriceVerifier")
+    public void shouldCorrectly_calculate_orderTotal(BigDecimal chocCupcakeUnitPrice,
+                                                     BigDecimal vanCupcakeUnitPrice,
+                                                     BigDecimal expectedOrderTotal) {
+
+        InitialOrderRequestModel customerOrder = buildInitialOrderRequestModel("VAN001");
+
+        Cupcake chocolateCupcake = Cupcake.builder()
+                .id(1L)
+                .productCode("CHOC001")
+                .flavour(Cupcake.Flavour.CHOCOLATE)
+                .unitPrice(chocCupcakeUnitPrice)
+                .build();
+
+        Cupcake vanillaCupcake = Cupcake.builder()
+                .id(2L)
+                .productCode("VAN001")
+                .flavour(Cupcake.Flavour.VANILLA)
+                .unitPrice(vanCupcakeUnitPrice)
+                .build();
+
+        Order savedOrder = Order.builder()
+                .id(1L)
+                .uuid(UUID.randomUUID())
+                .items(List.of(OrderItem.builder()
+                                .productCode("CHOC001")
+                                .cupcakeId(1L)
+                                .count(5)
+                                .unitPrice(chocCupcakeUnitPrice)
+                                .build(),
+                        OrderItem.builder()
+                                .productCode("VAN001")
+                                .cupcakeId(2L)
+                                .count(3)
+                                .unitPrice(vanCupcakeUnitPrice)
+                                .build()))
+                .build();
+
+        when(cupcakeRepository.findByProductCode("CHOC001")).thenReturn(chocolateCupcake);
+        when(cupcakeRepository.findByProductCode("VAN001")).thenReturn(vanillaCupcake);
+        doNothing().when(emailSender).send(any());
+
+        when(orderRepository.save(any())).thenReturn(savedOrder);
+
+        orderService.saveOrder(customerOrder);
+
+        // Capture the Order object
+        ArgumentCaptor<Order> orderCaptor = forClass(Order.class);
+        verify(orderRepository).save(orderCaptor.capture());
+        Order capturedOrder = orderCaptor.getValue();
+
+        assertThat(expectedOrderTotal).isEqualTo(capturedOrder.getTotalPrice());
+    }
+
+    private static Stream<Arguments> provideValuesForOrderPriceVerifier() {
+        return Stream.of(
+                Arguments.of(BigDecimal.valueOf(3.5), BigDecimal.valueOf(3.00), BigDecimal.valueOf(26.50)),
+                Arguments.of(BigDecimal.valueOf(3.9), BigDecimal.valueOf(3.15), BigDecimal.valueOf(28.95)),
+                Arguments.of(BigDecimal.valueOf(3.75), BigDecimal.valueOf(3.50), BigDecimal.valueOf(29.25))
+        );
+    }
+
+
+
+    private InitialOrderRequestModel buildInitialOrderRequestModel(String productCode) {
+        return InitialOrderRequestModel.builder()
+                .cupcakes(List.of(OrderItemDto.builder()
+                                .productCode("CHOC001")
+                                .count(5)
+                                .build(),
+                        OrderItemDto.builder()
+                                .productCode(productCode)
+                                .count(3)
+                                .build()
+                ))
+                .build();
     }
 }

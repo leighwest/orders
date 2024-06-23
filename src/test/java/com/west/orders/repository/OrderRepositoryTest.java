@@ -33,8 +33,9 @@ class OrderRepositoryTest {
                         .productCode("CHOC001")
                         .cupcakeId(1L)
                         .count(5)
+                        .unitPrice(BigDecimal.valueOf(3.5))
                         .build()))
-                        .totalPrice(BigDecimal.valueOf(32.00))
+                        .totalPrice(BigDecimal.valueOf(17.50))
                 .build();
 
         Order savedOrder = orderRepository.save(order);
@@ -43,7 +44,7 @@ class OrderRepositoryTest {
         assertThat(savedOrder.getId()).isPositive();
         assertThat(savedOrder.getCustomerOrderRef()).isEqualTo(21234412L);
         assertThat(savedOrder.getItems().size()).isEqualTo(1);
-        assertThat(savedOrder.getTotalPrice()).isEqualTo(BigDecimal.valueOf(32.00));
+        assertThat(savedOrder.getTotalPrice()).isEqualTo(BigDecimal.valueOf(17.50));
     }
 
 }

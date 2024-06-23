@@ -43,7 +43,7 @@ public class InventoryService {
                 return CupcakeResponseModel.builder()
                         .productCode(cupcake.getProductCode())
                         .flavour(cupcake.getFlavour())
-                        .price(cupcake.getPrice())
+                        .price(cupcake.getUnitPrice())
                         .image(s3ToBytes(s3Client,
                                 image.getBucketName(),
                                 image.getObjectKey()))
@@ -53,7 +53,7 @@ public class InventoryService {
                 return CupcakeResponseModel.builder()
                         .productCode(cupcake.getProductCode())
                         .flavour(cupcake.getFlavour())
-                        .price(cupcake.getPrice())
+                        .price(cupcake.getUnitPrice())
                         .image("") // Return an empty string if unable to retrieve image
                         .build();
             }

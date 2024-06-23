@@ -20,6 +20,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +55,7 @@ public class OrderService {
                 .uuid(UUID.randomUUID())
                 .customerOrderRef(buildCustomerRef())
                 .items(cupcakes)
-                .totalPrice(customerOrder.getTotalPrice())
+                .totalPrice(calculateOrderTotalPrice(cupcakes))
                 .build();
 
         Order savedOrder = orderRepository.save(order);
@@ -93,6 +94,7 @@ public class OrderService {
                     .cupcakeId(cupcakeEntity.getId())
                     .productCode(cupcakeRequest.getProductCode())
                     .count(cupcakeRequest.getCount())
+                    .unitPrice(cupcakeEntity.getUnitPrice())
                     .build();
         }).collect(Collectors.toList());
     }
@@ -104,6 +106,12 @@ public class OrderService {
                     .count(cupcake.getCount())
                     .build()
         ).collect(Collectors.toList());
+    }
+
+    private BigDecimal calculateOrderTotalPrice(List<OrderItem> cupcakes) {
+        return cupcakes.stream().map(cupcake ->
+                cupcake.getUnitPrice().multiply(BigDecimal.valueOf(cupcake.getCount())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private Long buildCustomerRef() {

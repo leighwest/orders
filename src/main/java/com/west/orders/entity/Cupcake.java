@@ -34,7 +34,7 @@ public class Cupcake {
     private Flavour flavour;
 
     @Column(nullable = false)
-    private BigDecimal price;
+    private BigDecimal unitPrice;
 
     @OneToOne
     @JoinColumn(name = "image", referencedColumnName = "productCode")

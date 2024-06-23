@@ -6,31 +6,40 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
-@Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
 @Builder
-@Table(name = "order_items")
-public class OrderItem {
+@Getter
+@Entity
+@Table(name = "address")
+public class Address {
+
+    public enum State {
+        VIC, NSW, QLD, WA, SA, TAS, ACT, NT
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    private Order order;
+    @Column
+    private String unitNumber;
 
     @Column(nullable = false)
-    private String productCode;
+    private String streetNumber;
 
     @Column(nullable = false)
-    private Long cupcakeId;
+    private String streetName;
 
     @Column(nullable = false)
-    private int count;
+    private String streetType;
 
     @Column(nullable = false)
-    private BigDecimal unitPrice;
+    private String suburb;
+
+    @Column(nullable = false)
+    private String postCode;
+
+    @Enumerated(EnumType.STRING)
+    private State state;
 }
