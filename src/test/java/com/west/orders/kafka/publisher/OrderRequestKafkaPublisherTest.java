@@ -1,8 +1,7 @@
-package com.west.orders.kafka.service;
+package com.west.orders.kafka.publisher;
 
 import com.west.orders.kafka.message.DispatchOrder;
 import com.west.orders.kafka.message.DispatchOrder.DispatchStatus;
-import com.west.orders.kafka.publisher.OrderRequestKafkaPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.kafka.core.KafkaTemplate;
