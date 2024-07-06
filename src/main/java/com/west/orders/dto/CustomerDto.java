@@ -21,7 +21,4 @@ public class CustomerDto {
 
     @Schema(description = "Email address of customer")
     private String email;
-
-    @Schema(description = "Shipping address of customer")
-    private AddressDto address;
 }

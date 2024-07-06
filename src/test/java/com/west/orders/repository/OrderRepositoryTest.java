@@ -1,5 +1,7 @@
 package com.west.orders.repository;
 
+import com.west.orders.entity.Address;
+import com.west.orders.entity.Customer;
 import com.west.orders.entity.Order;
 import com.west.orders.entity.OrderItem;
 import org.junit.jupiter.api.Test;
@@ -12,6 +14,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+import static com.west.orders.TestUtils.createAddress;
+import static com.west.orders.TestUtils.createCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -26,9 +30,15 @@ class OrderRepositoryTest {
     @Test
     public void shouldReturn_savedOrder_whenSave() {
 
+        Customer customer = createCustomer();
+
+        Address address = createAddress();
+
         Order order = Order.builder()
                 .uuid(UUID.randomUUID())
                 .customerOrderRef(21234412L)
+                .customer(customer)
+                .shippingAddress(address)
                 .items(List.of(OrderItem.builder()
                         .productCode("CHOC001")
                         .cupcakeId(1L)
@@ -46,5 +56,4 @@ class OrderRepositoryTest {
         assertThat(savedOrder.getItems().size()).isEqualTo(1);
         assertThat(savedOrder.getTotalPrice()).isEqualTo(BigDecimal.valueOf(17.50));
     }
-
 }

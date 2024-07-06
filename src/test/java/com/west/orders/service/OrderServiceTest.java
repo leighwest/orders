@@ -1,13 +1,11 @@
 package com.west.orders.service;
 
-import com.west.orders.dto.OrderItemDto;
 import com.west.orders.dto.request.InitialOrderRequestModel;
 import com.west.orders.dto.response.OrderResponseModel;
-import com.west.orders.entity.Cupcake;
-import com.west.orders.entity.Order;
-import com.west.orders.entity.OrderItem;
+import com.west.orders.entity.*;
 import com.west.orders.exception.ValidationError;
 import com.west.orders.exception.ValidationException;
+import com.west.orders.repository.AddressRepository;
 import com.west.orders.repository.CupcakeRepository;
 import com.west.orders.repository.OrderRepository;
 import com.west.orders.service.notification.handler.OrderReceivedEmailSender;
@@ -28,6 +26,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static com.west.orders.TestUtils.*;
 import static com.west.orders.validation.validator.CupcakeErrorCode.CUPCAKE_ORDER_ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -40,9 +39,13 @@ import static org.mockito.Mockito.*;
 class OrderServiceTest {
 
     @Mock
+    private CustomerService customerService;
+    @Mock
     private CupcakeRepository cupcakeRepository;
     @Mock
     private OrderRepository orderRepository;
+    @Mock
+    private AddressRepository addressRepository;
     @Mock
     private OrderSubmissionValidationProcessor validationProcessor;
     @Mock
@@ -54,7 +57,11 @@ class OrderServiceTest {
     @Test
     public void shouldReturn_orderDto_whenSaveOrder() {
 
-        InitialOrderRequestModel customerOrder = buildInitialOrderRequestModel("VAN001");
+        InitialOrderRequestModel customerOrder = createInitialOrderRequestModel("VAN001");
+
+        Customer customer = createCustomer();
+
+        Address address = createAddress();
 
         Cupcake chocolateCupcake = Cupcake.builder()
                 .id(1L)
@@ -73,6 +80,8 @@ class OrderServiceTest {
         Order savedOrder = Order.builder()
                 .id(1L)
                 .uuid(UUID.randomUUID())
+                .customer(customer)
+                .shippingAddress(address)
                 .items(List.of(OrderItem.builder()
                                 .productCode("CHOC001")
                                 .cupcakeId(1L)
@@ -98,13 +107,15 @@ class OrderServiceTest {
         assertThat(orderDto).isNotNull();
         assertThat(orderDto.getCupcakes().size()).isEqualTo(2);
 
+        verify(customerService).findOrSaveCustomer(any(InitialOrderRequestModel.class));
         verify(cupcakeRepository, times(2)).findByProductCode(anyString());
+        verify(addressRepository).save(any(Address.class));
         verify(orderRepository).save(any(Order.class));
     }
 
     @Test
     public void shouldThrow_error_ifCupcakeNotFound() {
-        InitialOrderRequestModel customerOrder = buildInitialOrderRequestModel("DNE001");
+        InitialOrderRequestModel customerOrder = createInitialOrderRequestModel("DNE001");
 
         List<String> productCodes = List.of("CHOC001", "LEM001", "VAN001");
 
@@ -123,7 +134,7 @@ class OrderServiceTest {
                                                      BigDecimal vanCupcakeUnitPrice,
                                                      BigDecimal expectedOrderTotal) {
 
-        InitialOrderRequestModel customerOrder = buildInitialOrderRequestModel("VAN001");
+        InitialOrderRequestModel customerOrder = createInitialOrderRequestModel("VAN001");
 
         Cupcake chocolateCupcake = Cupcake.builder()
                 .id(1L)
@@ -159,7 +170,6 @@ class OrderServiceTest {
         when(cupcakeRepository.findByProductCode("CHOC001")).thenReturn(chocolateCupcake);
         when(cupcakeRepository.findByProductCode("VAN001")).thenReturn(vanillaCupcake);
         doNothing().when(emailSender).send(any());
-
         when(orderRepository.save(any())).thenReturn(savedOrder);
 
         orderService.saveOrder(customerOrder);
@@ -178,21 +188,5 @@ class OrderServiceTest {
                 Arguments.of(BigDecimal.valueOf(3.9), BigDecimal.valueOf(3.15), BigDecimal.valueOf(28.95)),
                 Arguments.of(BigDecimal.valueOf(3.75), BigDecimal.valueOf(3.50), BigDecimal.valueOf(29.25))
         );
-    }
-
-
-
-    private InitialOrderRequestModel buildInitialOrderRequestModel(String productCode) {
-        return InitialOrderRequestModel.builder()
-                .cupcakes(List.of(OrderItemDto.builder()
-                                .productCode("CHOC001")
-                                .count(5)
-                                .build(),
-                        OrderItemDto.builder()
-                                .productCode(productCode)
-                                .count(3)
-                                .build()
-                ))
-                .build();
     }
 }

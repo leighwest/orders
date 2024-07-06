@@ -12,8 +12,8 @@ import static com.west.orders.validation.validator.CupcakeErrorCode.CUPCAKE_ORDE
 
 public class OrderValidator implements Validator{
     @Override
+    @SuppressWarnings("unchecked")
     public Optional<ValidationError> validate(ValidationContext context) {
-        @SuppressWarnings("unchecked")
         List<String> serverProductCodes = (List<String>) context.getData().get(ValidationContextDataType.PRODUCT_CODES);
         List<OrderItemDto> orderItems = (List<OrderItemDto>) context.getData().get(ValidationContextDataType.ORDER_ITEMS);
 

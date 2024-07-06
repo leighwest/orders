@@ -1,10 +1,9 @@
 package com.west.orders.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,12 +23,12 @@ public class Customer {
     private String firstName;
 
     @Column(nullable = false)
-    private String lastName;
+    private String surname;
 
     @Column(unique = true, nullable = false)
     private String email;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "address_id", referencedColumnName = "id")
-    private Address address;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "customer_id", referencedColumnName = "id")
+    private List<Order> orders;
 }

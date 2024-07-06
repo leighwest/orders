@@ -16,7 +16,7 @@ CREATE TABLE cupcakes (
     id               LONG NOT NULL AUTO_INCREMENT,
     productCode      VARCHAR(20) NOT NULL,
     flavour          VARCHAR(20) NOT NULL,
-    price            DECIMAL(10, 2) NOT NULL,
+    unitPrice        DECIMAL(10, 2) NOT NULL,
     image            VARCHAR(20),
     CONSTRAINT fk_image FOREIGN KEY (image) REFERENCES images(productCode)
 );
@@ -25,6 +25,6 @@ INSERT INTO images (productCode, bucketName, objectKey) VALUES ('CHOC001', 'buck
 INSERT INTO images (productCode, bucketName, objectKey) VALUES ('VAN001', 'bucket1', 'van_key');
 INSERT INTO images (productCode, bucketName, objectKey) VALUES ('LEM001', 'bucket1', 'lem_key');
 
-INSERT INTO cupcakes (productCode, flavour, price, image) VALUES ('CHOC001', 'CHOCOLATE', 3.50, CHOC001);
-INSERT INTO cupcakes (productCode, flavour, price, image) VALUES ('VAN001', 'VANILLA', 3.50, VAN001);
-INSERT INTO cupcakes (productCode, flavour, price, image) VALUES ('LEM001', 'LEMON', 3.50, LEM001);
+INSERT INTO cupcakes (productCode, flavour, unitPrice, image) VALUES ('CHOC001', 'CHOCOLATE', 3.50, CHOC001);
+INSERT INTO cupcakes (productCode, flavour, unitPrice, image) VALUES ('VAN001', 'VANILLA', 3.50, VAN001);
+INSERT INTO cupcakes (productCode, flavour, unitPrice, image) VALUES ('LEM001', 'LEMON', 3.50, LEM001);

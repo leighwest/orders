@@ -1,14 +1,14 @@
 package com.west.orders.service;
 
+import com.west.orders.dto.AddressDto;
 import com.west.orders.dto.OrderItemDto;
 import com.west.orders.dto.request.InitialOrderRequestModel;
 import com.west.orders.dto.response.OrderResponseModel;
-import com.west.orders.entity.Cupcake;
-import com.west.orders.entity.Order;
-import com.west.orders.entity.OrderItem;
+import com.west.orders.entity.*;
 import com.west.orders.kafka.message.DispatchOrder;
 import com.west.orders.kafka.message.DispatchOrder.DispatchStatus;
 import com.west.orders.kafka.publisher.OrderRequestKafkaPublisher;
+import com.west.orders.repository.AddressRepository;
 import com.west.orders.repository.CupcakeRepository;
 import com.west.orders.repository.OrderRepository;
 import com.west.orders.service.notification.handler.OrderReceivedEmailSender;
@@ -32,8 +32,10 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class OrderService {
 
-    private OrderRepository orderRepository;
+    private final CustomerService customerService;
     private CupcakeRepository cupcakeRepository;
+    private AddressRepository addressRepository;
+    private OrderRepository orderRepository;
     private OrderSubmissionValidationProcessor validationProcessor;
     private OrderRequestKafkaPublisher orderRequestKafkaPublisher;
     private OrderReceivedEmailSender emailSender;
@@ -51,9 +53,17 @@ public class OrderService {
 
         List<OrderItem> cupcakes = convertToOrderItems(customerOrder, cupcakeRepository);
 
+        Customer customer = customerService.findOrSaveCustomer(customerOrder);
+
+        Address address = buildAddress(customerOrder.getAddress());
+
+        addressRepository.save(address);
+
         Order order = Order.builder()
                 .uuid(UUID.randomUUID())
                 .customerOrderRef(buildCustomerRef())
+                .customer(customer)
+                .shippingAddress(address)
                 .items(cupcakes)
                 .totalPrice(calculateOrderTotalPrice(cupcakes))
                 .build();
@@ -106,6 +116,18 @@ public class OrderService {
                     .count(cupcake.getCount())
                     .build()
         ).collect(Collectors.toList());
+    }
+
+    private Address buildAddress(AddressDto address) {
+        return Address.builder()
+                .unitNumber(address.getUnitNumber())
+                .streetNumber(address.getStreetNumber())
+                .streetName(address.getStreetName())
+                .streetType(address.getStreetType())
+                .suburb(address.getSuburb())
+                .state(address.getState())
+                .postCode(address.getPostCode())
+                .build();
     }
 
     private BigDecimal calculateOrderTotalPrice(List<OrderItem> cupcakes) {

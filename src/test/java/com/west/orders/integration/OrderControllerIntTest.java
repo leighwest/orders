@@ -22,16 +22,15 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+import static com.west.orders.TestUtils.createInitialOrderRequestModel;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -64,17 +63,7 @@ public class OrderControllerIntTest extends AbstractionBaseTest {
     @Test
     public void shouldReturn_OrderResponseModel_whenCustomerSubmitsOrder() throws Exception {
 
-        InitialOrderRequestModel customerOrder = InitialOrderRequestModel.builder()
-                .cupcakes(List.of(OrderItemDto.builder()
-                                .productCode("CHOC001")
-                                .count(5)
-                                .build(),
-                        OrderItemDto.builder()
-                                .productCode("VAN001")
-                                .count(3)
-                                .build()
-                ))
-                .build();
+        InitialOrderRequestModel customerOrder = createInitialOrderRequestModel("VAN001");
 
         OrderResponseModel orderResponse = OrderResponseModel.builder()
                 .id(UUID.randomUUID())
@@ -105,20 +94,9 @@ public class OrderControllerIntTest extends AbstractionBaseTest {
 
     @Test
     public void shouldSave_Order_whenCustomerSubmitsOrder() throws Exception {
+        InitialOrderRequestModel customerOrder = createInitialOrderRequestModel("VAN001");
 
-        InitialOrderRequestModel customerOrder = InitialOrderRequestModel.builder()
-                .cupcakes(List.of(OrderItemDto.builder()
-                                .productCode("CHOC001")
-                                .count(5)
-                                .build(),
-                        OrderItemDto.builder()
-                                .productCode("VAN001")
-                                .count(3)
-                                .build()
-                ))
-                .build();
-
-       mockMvc.perform(post("/order")
+        mockMvc.perform(post("/order")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(customerOrder)));
 

@@ -1,10 +1,7 @@
 package com.west.orders.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -23,17 +20,24 @@ public class Order {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private UUID uuid;  // for customer, assigned when dto first converted to entity
+    private UUID uuid;
 
     @Column(nullable = false)
     private Long customerOrderRef;
 
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "customer_id", nullable = false)
+    private Customer customer;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id", referencedColumnName = "id")
+    @Setter
+    private Address shippingAddress;
+
     @Column(nullable = false)
     private BigDecimal totalPrice;
 
-    @Column(nullable = false)
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "order_id")
     private List<OrderItem> items;
-
 }
