@@ -53,7 +53,7 @@ class DispatchEventKafkaListenerTest {
         dispatchEventKafkaListener.receive(buildDispatchOrder(DispatchOrder.DispatchStatus.COMPLETED));
 
         verify(orderRepository, times(1)).findById(anyLong());
-        verify(orderDispatchedEmailSender, times(0)).send(any());
+        verify(orderDispatchedEmailSender, never()).send(any());
     }
 
     @Test
@@ -61,8 +61,8 @@ class DispatchEventKafkaListenerTest {
 
         dispatchEventKafkaListener.receive(buildDispatchOrder(DispatchOrder.DispatchStatus.PENDING));
 
-        verify(orderRepository, times(0)).findById(anyLong());
-        verify(orderDispatchedEmailSender, times(0)).send(any());
+        verify(orderRepository, never()).findById(anyLong());
+        verify(orderDispatchedEmailSender, never()).send(any());
     }
 
     private DispatchOrder buildDispatchOrder(DispatchOrder.DispatchStatus status) {
