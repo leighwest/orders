@@ -14,22 +14,22 @@ import lombok.NoArgsConstructor;
 @Schema(description = "The definition of an Address")
 public class AddressDto {
 
-    @Schema(description = "Apartment or unit number")
+    @Schema(description = "Apartment or unit number", example = "1B")
     private String unitNumber;
 
-    @Schema(description = "Street number")
+    @Schema(description = "Street number", example = "123")
     private String streetNumber;
 
-    @Schema(description = "Street name")
+    @Schema(description = "Street name", example = "Example")
     private String streetName;
 
-    @Schema(description = "Street type")
+    @Schema(description = "Street type", example = "Ave")
     private String streetType;
 
-    @Schema(description = "Suburb")
+    @Schema(description = "Suburb", example = "Exampleton")
     private String suburb;
 
-    @Schema(description = "Postcode")
+    @Schema(description = "Postcode", example = "3000")
     private String postCode;
 
     @Schema(description = "State or territory", implementation = State.class)

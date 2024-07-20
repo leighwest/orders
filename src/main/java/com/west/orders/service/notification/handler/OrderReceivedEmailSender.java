@@ -33,7 +33,7 @@ public class OrderReceivedEmailSender {
     private Mail getMail(Order order) {
 
         OrderReceivedMailMetadata metadata = new OrderReceivedMailMetadata(
-                 "Leigh", order.getCustomerOrderRef()
+                order.getCustomer().getFirstName(), order.getCustomerOrderRef()
         );
 
         String emailBody = emailService.getOrderEmail(
@@ -41,7 +41,7 @@ public class OrderReceivedEmailSender {
                 metadata
         );
 
-        return new Mail("leighwest@hotmail.com", "cupcake-orders@leighwest.dev", "We've got your cupcake order!",
+        return new Mail(order.getCustomer().getEmail(), "cupcake-orders@leighwest.dev", "We've got your cupcake order!",
                 emailBody, true);
     }
 }
