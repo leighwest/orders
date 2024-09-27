@@ -11,3 +11,12 @@ variable "PATH_TO_PRIVATE_KEY" {
 variable "PATH_TO_PUBLIC_KEY" {
   default = "orders.pub"
 }
+
+variable "PATH_TO_EC2_STOP_SCRIPT" {
+  default = "scripts/ec2_stop.py"
+}
+
+variable "INSTANCE_ID" {
+  description = "The ID of the orders EC2 instance."
+  type        = string
+}
