@@ -5,9 +5,9 @@ variable "AWS_REGION" {
 }
 variable "PERSONAL_IP_ADDRESS" {}
 variable "PATH_TO_PRIVATE_KEY" {
-  default = "mykey"
+  default = "orders"
 }
 
 variable "PATH_TO_PUBLIC_KEY" {
-  default = "mykey.pub"
+  default = "orders.pub"
 }

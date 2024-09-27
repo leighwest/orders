@@ -1,5 +1,5 @@
 resource "aws_instance" "orders" {
-  ami           = "ami-0e29b5d20780849a6"
+  ami           = "ami-074a098b061c6ab42"
   instance_type = "t3.small"
   tags = {
     Name = "orders-server"
@@ -9,7 +9,7 @@ resource "aws_instance" "orders" {
 
   user_data = data.cloudinit_config.instance-bootstrap.rendered
 
-  key_name = aws_key_pair.mykeypair.key_name
+  key_name = aws_key_pair.keypair.key_name
 }
 
 resource "aws_eip" "orders-eip" {

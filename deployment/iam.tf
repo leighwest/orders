@@ -22,3 +22,56 @@ resource "aws_ssm_parameter" "smtp_password" {
   type  = "SecureString"
   value = aws_iam_access_key.smtp_credentials.secret
 }
+
+###
+# EC2 Instance Manager
+###
+
+resource "aws_iam_user" "ec2_manager" {
+  name = "ec2-manager"
+}
+
+resource "aws_iam_policy" "ec2_mgmt_policy" {
+  name        = "EC2ManagementPolicy"
+  path        = "/"
+  description = "Allow starting and stopping EC2 instances"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:StartInstances",
+          "ec2:StopInstances",
+          "ec2:DescribeInstances",
+          "ec2:CreateTags",
+        ]
+        Resource = [
+          "*",
+        ]
+      },
+    ]
+  })
+}
+
+resource "aws_iam_user_policy_attachment" "ec2_manager_policy_attach" {
+  user       = aws_iam_user.ec2_manager.name
+  policy_arn = aws_iam_policy.ec2_mgmt_policy.arn
+}
+
+resource "aws_iam_access_key" "ec2_manager_credentials" {
+  user = aws_iam_user.ec2_manager.name
+}
+
+resource "aws_ssm_parameter" "ec2_manager_access_key_id" {
+  name  = "ec2_manager_access_key_id"
+  type  = "String"
+  value = aws_iam_access_key.ec2_manager_credentials.id
+}
+
+resource "aws_ssm_parameter" "ec2_manager_secret_access_key" {
+  name  = "ec2_manager_secret_access_key"
+  type  = "SecureString"
+  value = aws_iam_access_key.ec2_manager_credentials.secret
+}
