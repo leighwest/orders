@@ -1,10 +1,8 @@
-package com.west.orders.kafka.message;
+package com.west.orders.sqs.message;
 
 import lombok.*;
 
 @Builder
-@RequiredArgsConstructor
-@AllArgsConstructor
 @Data
 public class DispatchOrder {
 

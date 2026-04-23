@@ -9,6 +9,7 @@ import com.west.orders.repository.AddressRepository;
 import com.west.orders.repository.CupcakeRepository;
 import com.west.orders.repository.OrderRepository;
 import com.west.orders.service.notification.handler.OrderReceivedEmailSender;
+import com.west.orders.sqs.publisher.OrderRequestSqsPublisher;
 import com.west.orders.validation.OrderSubmissionValidationProcessor;
 import com.west.orders.validation.ValidationContext;
 import org.junit.jupiter.api.Test;
@@ -50,6 +51,8 @@ class OrderServiceTest {
     private OrderSubmissionValidationProcessor validationProcessor;
     @Mock
     private OrderReceivedEmailSender emailSender;
+    @Mock
+    private OrderRequestSqsPublisher orderRequestSqsPublisher;
 
     @InjectMocks
     private OrderService orderService;

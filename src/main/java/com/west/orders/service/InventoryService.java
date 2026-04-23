@@ -1,7 +1,5 @@
 package com.west.orders.service;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.S3Object;
 import com.west.orders.dto.response.CupcakeResponseModel;
 import com.west.orders.entity.Cupcake;
 import com.west.orders.entity.Image;
@@ -10,15 +8,17 @@ import com.west.orders.repository.ImageRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 
 @Slf4j
 @AllArgsConstructor
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class InventoryService {
     private CupcakeRepository cupcakeRepository;
     private ImageRepository imageRepository;
-    private AmazonS3 s3Client;
+    private S3Client s3Client;
 
     public List<CupcakeResponseModel> getCupcakes() {
 
@@ -44,9 +44,7 @@ public class InventoryService {
                         .productCode(cupcake.getProductCode())
                         .flavour(cupcake.getFlavour())
                         .price(cupcake.getUnitPrice())
-                        .image(s3ToBytes(s3Client,
-                                image.getBucketName(),
-                                image.getObjectKey()))
+                        .image(s3ToBytes(image.getBucketName(), image.getObjectKey()))
                         .build();
             } catch (IOException e) {
                 log.error("IOException occurred: {}", e.getMessage());
@@ -54,22 +52,25 @@ public class InventoryService {
                         .productCode(cupcake.getProductCode())
                         .flavour(cupcake.getFlavour())
                         .price(cupcake.getUnitPrice())
-                        .image("") // Return an empty string if unable to retrieve image
+                        .image("")
                         .build();
             }
         }).collect(Collectors.toList());
     }
 
-    private String s3ToBytes(AmazonS3 s3Client, String bucketName, String objectKey) throws IOException {
-        S3Object s3Object = s3Client.getObject(bucketName, objectKey);
-        try (InputStream inputStream = s3Object.getObjectContent()) {
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            int nRead;
+    private String s3ToBytes(String bucketName, String objectKey) throws IOException {
+        GetObjectRequest request = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(objectKey)
+                .build();
+
+        try (ResponseInputStream<GetObjectResponse> s3Object = s3Client.getObject(request);
+             ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
             byte[] data = new byte[1024];
-            while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
+            int nRead;
+            while ((nRead = s3Object.read(data, 0, data.length)) != -1) {
                 buffer.write(data, 0, nRead);
             }
-            buffer.flush();
             return Base64.getEncoder().encodeToString(buffer.toByteArray());
         }
     }

@@ -1,7 +1,5 @@
 package com.west.orders.service;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.S3Object;
 import com.west.orders.dto.response.CupcakeResponseModel;
 import com.west.orders.entity.Cupcake;
 import com.west.orders.entity.Image;
@@ -12,6 +10,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.http.AbortableInputStream;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -20,8 +23,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,7 +34,7 @@ class InventoryServiceTest {
     @Mock
     private ImageRepository imageRepository;
     @Mock
-    private AmazonS3 s3Client;
+    private S3Client s3Client;
 
     @InjectMocks
     private InventoryService inventoryService;
@@ -44,16 +46,14 @@ class InventoryServiceTest {
         List<Cupcake> testCupcakes = createCupcakes(images);
         List<CupcakeResponseModel> expectedResponse = createExpectedResponse();
 
-        S3Object s3ChocolateCupcake = new S3Object();
-        s3ChocolateCupcake.setObjectContent(new ByteArrayInputStream("chocolateCupcake".getBytes()));
-
-        S3Object s3VanillaCupcake = new S3Object();
-        s3VanillaCupcake.setObjectContent(new ByteArrayInputStream("vanillaCupcake".getBytes()));
+        ResponseInputStream<GetObjectResponse> chocolateStream = createResponseInputStream("chocolateCupcake".getBytes());
+        ResponseInputStream<GetObjectResponse> vanillaStream = createResponseInputStream("vanillaCupcake".getBytes());
 
         when(imageRepository.findAll()).thenReturn(images);
         when(cupcakeRepository.findAll()).thenReturn(testCupcakes);
-        when(s3Client.getObject(anyString(), eq(images.get(0).getObjectKey()))).thenReturn(s3ChocolateCupcake);
-        when(s3Client.getObject(anyString(), eq(images.get(1).getObjectKey()))).thenReturn(s3VanillaCupcake);
+        when(s3Client.getObject(any(GetObjectRequest.class)))
+                .thenReturn(chocolateStream)
+                .thenReturn(vanillaStream);
 
         List<CupcakeResponseModel> cupcakes = inventoryService.getCupcakes();
 
@@ -74,23 +74,14 @@ class InventoryServiceTest {
         List<Cupcake> testCupcakes = createCupcakes(images);
         List<CupcakeResponseModel> expectedResponse = createExpectedResponseWithEmptyImage();
 
-
-        S3Object s3ChocolateCupcake = new S3Object();
-        s3ChocolateCupcake.setObjectContent(new ByteArrayInputStream("chocolateCupcake".getBytes()));
-
-        InputStream errorStream = new InputStream() {
-            @Override
-            public int read() throws IOException {
-                throw new IOException("Image unable to be retrieved");
-            }
-        };
-        S3Object s3VanillaCupcake = new S3Object();
-        s3VanillaCupcake.setObjectContent(errorStream);
+        ResponseInputStream<GetObjectResponse> chocolateStream = createResponseInputStream("chocolateCupcake".getBytes());
+        ResponseInputStream<GetObjectResponse> errorStream = createErrorResponseInputStream();
 
         when(imageRepository.findAll()).thenReturn(images);
         when(cupcakeRepository.findAll()).thenReturn(testCupcakes);
-        when(s3Client.getObject(anyString(), eq(images.get(0).getObjectKey()))).thenReturn(s3ChocolateCupcake);
-        when(s3Client.getObject(anyString(), eq(images.get(1).getObjectKey()))).thenReturn(s3VanillaCupcake);
+        when(s3Client.getObject(any(GetObjectRequest.class)))
+                .thenReturn(chocolateStream)
+                .thenReturn(errorStream);
 
         List<CupcakeResponseModel> cupcakes = inventoryService.getCupcakes();
 
@@ -102,6 +93,26 @@ class InventoryServiceTest {
         assertThat(cupcakes.get(1).getFlavour()).isEqualTo(expectedResponse.get(1).getFlavour());
         assertThat(cupcakes.get(1).getPrice()).isEqualTo(expectedResponse.get(1).getPrice());
         assertThat(cupcakes.get(1).getImage()).isBlank();
+    }
+
+    private ResponseInputStream<GetObjectResponse> createResponseInputStream(byte[] bytes) {
+        return new ResponseInputStream<>(
+                GetObjectResponse.builder().build(),
+                AbortableInputStream.create(new ByteArrayInputStream(bytes))
+        );
+    }
+
+    private ResponseInputStream<GetObjectResponse> createErrorResponseInputStream() {
+        InputStream errorStream = new InputStream() {
+            @Override
+            public int read() throws IOException {
+                throw new IOException("Image unable to be retrieved");
+            }
+        };
+        return new ResponseInputStream<>(
+                GetObjectResponse.builder().build(),
+                AbortableInputStream.create(errorStream)
+        );
     }
 
     private List<Image> createImages() {
@@ -119,7 +130,8 @@ class InventoryServiceTest {
     }
 
     private List<CupcakeResponseModel> createExpectedResponse() {
-        return List.of(CupcakeResponseModel.builder()
+        return List.of(
+                CupcakeResponseModel.builder()
                         .productCode("CHOC001")
                         .flavour(Cupcake.Flavour.CHOCOLATE)
                         .price(BigDecimal.valueOf(3.50))
@@ -135,7 +147,8 @@ class InventoryServiceTest {
     }
 
     private List<CupcakeResponseModel> createExpectedResponseWithEmptyImage() {
-        return List.of(CupcakeResponseModel.builder()
+        return List.of(
+                CupcakeResponseModel.builder()
                         .productCode("CHOC001")
                         .flavour(Cupcake.Flavour.CHOCOLATE)
                         .price(BigDecimal.valueOf(3.50))
@@ -145,7 +158,7 @@ class InventoryServiceTest {
                         .productCode("VAN001")
                         .flavour(Cupcake.Flavour.VANILLA)
                         .price(BigDecimal.valueOf(3.50))
-                        .image("") // Expecting empty image due to IOException
+                        .image("")
                         .build()
         );
     }

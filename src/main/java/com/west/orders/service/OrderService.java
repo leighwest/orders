@@ -5,13 +5,13 @@ import com.west.orders.dto.OrderItemDto;
 import com.west.orders.dto.request.InitialOrderRequestModel;
 import com.west.orders.dto.response.OrderResponseModel;
 import com.west.orders.entity.*;
-import com.west.orders.kafka.message.DispatchOrder;
-import com.west.orders.kafka.message.DispatchOrder.DispatchStatus;
-import com.west.orders.kafka.publisher.OrderRequestKafkaPublisher;
 import com.west.orders.repository.AddressRepository;
 import com.west.orders.repository.CupcakeRepository;
 import com.west.orders.repository.OrderRepository;
 import com.west.orders.service.notification.handler.OrderReceivedEmailSender;
+import com.west.orders.sqs.message.DispatchOrder;
+import com.west.orders.sqs.message.DispatchOrder.DispatchStatus;
+import com.west.orders.sqs.publisher.OrderRequestSqsPublisher;
 import com.west.orders.validation.OrderSubmissionValidationProcessor;
 import com.west.orders.validation.ValidationContext;
 import com.west.orders.validation.ValidationContextDataType;
@@ -37,7 +37,7 @@ public class OrderService {
     private AddressRepository addressRepository;
     private OrderRepository orderRepository;
     private OrderSubmissionValidationProcessor validationProcessor;
-    private OrderRequestKafkaPublisher orderRequestKafkaPublisher;
+    private OrderRequestSqsPublisher orderRequestSqsPublisher;
     private OrderReceivedEmailSender emailSender;
 
     public OrderResponseModel saveOrder(InitialOrderRequestModel customerOrder) {
@@ -77,7 +77,7 @@ public class OrderService {
                 .build();
 
         try {
-            orderRequestKafkaPublisher.process(dispatchOrder);
+            orderRequestSqsPublisher.process(dispatchOrder);
         } catch (Exception e) {
             log.error("Error while sending dispatch order message to kafka with order ID {}, error: {}",
                     order.getId(), e.getMessage());

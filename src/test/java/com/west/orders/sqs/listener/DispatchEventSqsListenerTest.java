@@ -1,8 +1,8 @@
-package com.west.orders.kafka.listener;
+package com.west.orders.sqs.listener;
 
 import com.west.orders.entity.Order;
 import com.west.orders.entity.OrderItem;
-import com.west.orders.kafka.message.DispatchOrder;
+import com.west.orders.sqs.message.DispatchOrder;
 import com.west.orders.repository.OrderRepository;
 import com.west.orders.service.notification.handler.OrderDispatchedEmailSender;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class DispatchEventKafkaListenerTest {
+class DispatchEventSqsListenerTest {
 
     @Mock
     private OrderDispatchedEmailSender orderDispatchedEmailSender;
@@ -30,7 +30,7 @@ class DispatchEventKafkaListenerTest {
     private OrderRepository orderRepository;
 
     @InjectMocks
-    private DispatchEventKafkaListener dispatchEventKafkaListener;
+    private DispatchEventSqsListener dispatchEventSqsListener;
 
     @Test
     public void process_Success() {
@@ -40,7 +40,7 @@ class DispatchEventKafkaListenerTest {
         when(orderRepository.findById(anyLong())).thenReturn(order);
         doNothing().when(orderDispatchedEmailSender).send(any(Order.class));
 
-        dispatchEventKafkaListener.receive(buildDispatchOrder(DispatchOrder.DispatchStatus.COMPLETED));
+        dispatchEventSqsListener.receive(buildDispatchOrder(DispatchOrder.DispatchStatus.COMPLETED));
 
         verify(orderRepository, times(1)).findById(anyLong());
         verify(orderDispatchedEmailSender, times(1)).send(any());
@@ -50,7 +50,7 @@ class DispatchEventKafkaListenerTest {
     public void shouldNotCall_OrderDispatchedEmailSender_ifOrderNotFound() {
         when(orderRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        dispatchEventKafkaListener.receive(buildDispatchOrder(DispatchOrder.DispatchStatus.COMPLETED));
+        dispatchEventSqsListener.receive(buildDispatchOrder(DispatchOrder.DispatchStatus.COMPLETED));
 
         verify(orderRepository, times(1)).findById(anyLong());
         verify(orderDispatchedEmailSender, never()).send(any());
@@ -59,7 +59,7 @@ class DispatchEventKafkaListenerTest {
     @Test
     public void shouldNotCall_OrderDispatchedEmailSender_ifDispatchStatusNotCompleted() {
 
-        dispatchEventKafkaListener.receive(buildDispatchOrder(DispatchOrder.DispatchStatus.PENDING));
+        dispatchEventSqsListener.receive(buildDispatchOrder(DispatchOrder.DispatchStatus.PENDING));
 
         verify(orderRepository, never()).findById(anyLong());
         verify(orderDispatchedEmailSender, never()).send(any());

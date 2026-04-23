@@ -6,11 +6,13 @@ import com.west.orders.repository.CupcakeRepository;
 import com.west.orders.repository.ImageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
 @Component
+@Profile("!test")
 public class DataLoader implements CommandLineRunner {
 
     @Autowired

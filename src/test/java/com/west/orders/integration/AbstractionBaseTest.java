@@ -2,10 +2,12 @@ package com.west.orders.integration;
 
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 
+@Sql(scripts = "/insertData.sql")
 public abstract class AbstractionBaseTest {
 
     static final MySQLContainer<?> MY_SQL_CONTAINER;
@@ -27,5 +29,6 @@ public abstract class AbstractionBaseTest {
         registry.add("spring.datasource.name", MY_SQL_CONTAINER::getDatabaseName);
         registry.add("spring.datasource.username", MY_SQL_CONTAINER::getUsername);
         registry.add("spring.datasource.password", MY_SQL_CONTAINER::getPassword);
+        registry.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.MySQLDialect");
     }
 }

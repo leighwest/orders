@@ -1,9 +1,12 @@
 package com.west.orders.service;
 
 import com.west.orders.service.model.OrderReceivedMailMetadata;
+import com.west.orders.sqs.listener.DispatchEventSqsListener;
+import com.west.orders.sqs.publisher.OrderRequestSqsPublisher;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.io.IOException;
@@ -12,14 +15,18 @@ import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(properties = {
-        "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration"
-})
+@SpringBootTest
 @ActiveProfiles("test")
 public class EmailServiceIntTest {
 
     @Autowired
     private EmailService emailService;
+
+    @MockBean
+    private OrderRequestSqsPublisher orderRequestSqsPublisher;
+
+    @MockBean
+    private DispatchEventSqsListener dispatchEventSqsListener;
 
     @Test
     public void shouldGenerateOrderReceivedEmail() throws IOException {
