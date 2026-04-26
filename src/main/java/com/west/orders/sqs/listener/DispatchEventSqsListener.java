@@ -25,7 +25,7 @@ public class DispatchEventSqsListener {
         log.info("SQS message received with payload: {}", payload);
 
         if (payload.getDispatchStatus() == DispatchStatus.COMPLETED) {
-            log.info("Received order successfully dispatched event for order id: {}", payload.getOrderId());
+            log.info("Received order successfully dispatched event for order ID: {}", payload.getOrderId());
 
             Optional<Order> order = orderRepository.findById(payload.getOrderId());
 
