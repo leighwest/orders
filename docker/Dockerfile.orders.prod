@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 COPY target/orders-1.0.jar /app/orders.jar
 EXPOSE 8080
