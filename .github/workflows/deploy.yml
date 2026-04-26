@@ -83,7 +83,6 @@ jobs:
           aws ec2 wait instance-running --instance-ids ${{ secrets.INSTANCE_ID }}
           sleep 30
 
-    steps:
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v1
         with:
