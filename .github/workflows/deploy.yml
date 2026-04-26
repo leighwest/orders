@@ -82,3 +82,26 @@ jobs:
           aws ec2 start-instances --instance-ids ${{ secrets.INSTANCE_ID }}
           aws ec2 wait instance-running --instance-ids ${{ secrets.INSTANCE_ID }}
           sleep 30
+
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: AWS_REGION
+          script: |
+            aws ecr get-login-password --region ap-southeast-4 \
+              | docker login --username AWS --password-stdin \
+                $(aws sts get-caller-identity --query Account --output text).dkr.ecr.ap-southeast-4.amazonaws.com
+            
+            REGISTRY=$(aws sts get-caller-identity --query Account --output text).dkr.ecr.ap-southeast-4.amazonaws.com
+            
+            export ORDERS_IMAGE=$REGISTRY/orders:latest
+            export MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
+
+            docker-compose -f docker-compose.prod.yaml pull
+            docker-compose -f docker-compose.prod.yaml up -d
+  
+            docker image prune -f
