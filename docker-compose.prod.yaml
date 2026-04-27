@@ -1,12 +1,10 @@
-version: "3.8"
 services:
   mysql:
     container_name: mysql
-    build:
-      context: ./docker
-      dockerfile: Dockerfile.db.prod
-      args:
-        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: orders
     ports:
       - 3306:3306
     volumes:
