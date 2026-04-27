@@ -92,7 +92,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
-          host_key_verification: false
+          use_insecure_cipher: true
           source: "docker-compose.prod.yaml,docker/"
           target: "/home/ec2-user/"
 
@@ -102,7 +102,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
-          host_key_verification: false
+          use_insecure_cipher: true
           envs: MYSQL_ROOT_PASSWORD,AWS_REGION
           script: |
             aws ecr get-login-password --region ap-southeast-4 \
