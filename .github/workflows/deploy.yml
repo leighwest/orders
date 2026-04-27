@@ -114,12 +114,10 @@ jobs:
             export MAIL_PASSWORD=$(aws ssm get-parameter --name orders_ses_smtp_password --with-decryption --query Parameter.Value --output text)
             export ORDERS_IMAGE=$REGISTRY/orders:latest
             
-            cat > /home/ec2-user/.env <<EOF
-            MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
-            MAIL_USERNAME=$MAIL_USERNAME
-            MAIL_PASSWORD=$MAIL_PASSWORD
-            ORDERS_IMAGE=$ORDERS_IMAGE
-            EOF
+            echo "MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD" > /home/ec2-user/.env
+            echo "MAIL_USERNAME=$MAIL_USERNAME" >> /home/ec2-user/.env
+            echo "MAIL_PASSWORD=$MAIL_PASSWORD" >> /home/ec2-user/.env
+            echo "ORDERS_IMAGE=$ORDERS_IMAGE" >> /home/ec2-user/.env
             
             docker-compose -f docker-compose.prod.yaml pull
             docker-compose -f docker-compose.prod.yaml up -d
