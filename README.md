@@ -6,6 +6,8 @@ Customers place orders via a Swagger UI. The service persists the order, sends a
 
 The infrastructure is managed in a companion repo: [orders-infra](https://github.com/leighwest/orders-infra).
 
+**Live API:** [http://cupcakes-api.leighwest.dev:8080](http://cupcakes-api.leighwest.dev:8080) *(requires the EC2 instance to be running — use the [instance starter](http://instance-starter.leighwest.dev) to boot it)*
+
 ---
 
 ## Architecture
@@ -41,7 +43,40 @@ Customer places order (Swagger UI)
 | Email | AWS SES + Thymeleaf templates |
 | Testing | JUnit 5, Mockito, Testcontainers |
 | Infrastructure | Terraform (see orders-infra) |
-| Local dev | Docker Compose |
+| CI/CD | GitHub Actions |
+| Container runtime | Docker, Docker Compose |
+
+---
+
+## CI/CD
+
+Every push to `main` triggers the deploy pipeline:
+
+```
+Push to main
+     ↓
+Build & test (Maven)
+     ↓
+Build Docker image → push to ECR
+     ↓
+Start EC2 instance
+     ↓
+SSH into EC2 → pull image → docker-compose up
+```
+
+The pipeline is defined in `.github/workflows/deploy.yml`.
+
+### Secrets required
+
+| Secret | Description |
+|---|---|
+| `AWS_ACCESS_KEY_ID` | IAM credentials for ECR push and EC2 start |
+| `AWS_SECRET_ACCESS_KEY` | IAM credentials |
+| `EC2_HOST` | Elastic IP of the EC2 instance |
+| `EC2_SSH_KEY` | Private SSH key for EC2 access |
+| `INSTANCE_ID` | EC2 instance ID for start/stop |
+
+Application secrets (`MYSQL_ROOT_PASSWORD`, `MAIL_USERNAME`, `MAIL_PASSWORD`) are fetched at deploy time from AWS Systems Manager Parameter Store — not stored in GitHub secrets.
 
 ---
 
@@ -51,7 +86,6 @@ Customer places order (Swagger UI)
 
 - Java 17
 - Docker Desktop
-- Maven (or use the included `./mvnw` wrapper)
 - AWS CLI configured with credentials for `ap-southeast-4`
 - AWS SQS queues provisioned (see [orders-infra](https://github.com/leighwest/orders-infra))
 
@@ -63,10 +97,10 @@ git clone https://github.com/leighwest/orders.git
 cd orders
 ```
 
-2. Create a `.env` file in the project root for email credentials:
+2. Create a `.env` file in the project root:
 ```
-MAIL_USERNAME=your-email@example.com
-MAIL_PASSWORD=your-smtp-password
+MAIL_USERNAME=your-gmail@example.com
+MAIL_PASSWORD=your-gmail-app-password
 ```
 
 3. Start MySQL:
@@ -79,7 +113,7 @@ docker-compose up -d
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-5. Open Swagger UI: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+5. Open Swagger UI: [http://localhost:8080](http://localhost:8080)
 
 The `local` profile connects to the Docker MySQL instance and uses your AWS CLI credentials (`~/.aws/credentials`) for SQS and S3 access. No AWS credentials should appear in any config file.
 
@@ -121,6 +155,8 @@ Integration tests use Testcontainers and require Docker Desktop to be running. U
 | Real AWS SQS locally | Consistent with prod, stronger demo story than LocalStack |
 | EC2 instance role | No credentials in config — AWS best practice |
 | Lambda as dispatch service | Realistic microservices pattern without a second full service |
+| Secrets in Parameter Store | Single source of truth, no duplication across GitHub secrets and config files |
+| Docker Compose in prod | Appropriate for single-instance hobby project — ECS/EKS would be the enterprise equivalent |
 | Testcontainers for integration tests | Real MySQL dialect, isolated per run |
 | H2 for unit tests | Fast, no Docker required |
 
