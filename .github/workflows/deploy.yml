@@ -109,9 +109,9 @@ jobs:
             
             REGISTRY=$(aws sts get-caller-identity --query Account --output text).dkr.ecr.ap-southeast-4.amazonaws.com
             
-            export MYSQL_ROOT_PASSWORD=$(aws ssm get-parameter --name orders_mysql_password --with-decryption --query Parameter.Value --output text)
-            export MAIL_USERNAME=$(aws ssm get-parameter --name orders_ses_smtp_username --with-decryption --query Parameter.Value --output text)
-            export MAIL_PASSWORD=$(aws ssm get-parameter --name orders_ses_smtp_password --with-decryption --query Parameter.Value --output text)
+            export MYSQL_ROOT_PASSWORD=$(aws ssm get-parameter --name orders_mysql_password --with-decryption --query Parameter.Value --output text --region ap-southeast-4)
+            export MAIL_USERNAME=$(aws ssm get-parameter --name orders_ses_smtp_username --with-decryption --query Parameter.Value --output text --region ap-southeast-4)
+            export MAIL_PASSWORD=$(aws ssm get-parameter --name orders_ses_smtp_password --with-decryption --query Parameter.Value --output text --region ap-southeast-4)
             export ORDERS_IMAGE=$REGISTRY/orders:latest
             
             echo "MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD" > /home/ec2-user/.env
