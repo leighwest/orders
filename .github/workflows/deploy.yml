@@ -90,7 +90,7 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           host_key_verification: false
-          envs: AWS_REGION
+          envs: MYSQL_ROOT_PASSWORD,AWS_REGION
           script: |
             aws ecr get-login-password --region ap-southeast-4 \
               | docker login --username AWS --password-stdin \
@@ -99,9 +99,10 @@ jobs:
             REGISTRY=$(aws sts get-caller-identity --query Account --output text).dkr.ecr.ap-southeast-4.amazonaws.com
             
             export ORDERS_IMAGE=$REGISTRY/orders:latest
-            export MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
-
+            
             docker-compose -f docker-compose.prod.yaml pull
             docker-compose -f docker-compose.prod.yaml up -d
-  
+            
             docker image prune -f
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
