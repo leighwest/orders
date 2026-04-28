@@ -6,7 +6,7 @@ Customers place orders via a Swagger UI. The service persists the order, sends a
 
 The infrastructure is managed in a companion repo: [orders-infra](https://github.com/leighwest/orders-infra).
 
-**Live API:** [http://cupcakes-api.leighwest.dev:8080](http://cupcakes-api.leighwest.dev:8080) *(requires the EC2 instance to be running — use the [instance starter](http://instance-starter.leighwest.dev) to boot it)*
+**Live API:** [http://cupcakes-api.leighwest.dev](http://cupcakes-api.leighwest.dev) *(requires the EC2 instance to be running — use the [instance starter](http://instance-starter.leighwest.dev) to boot it)*
 
 ---
 
