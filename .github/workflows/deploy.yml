@@ -93,7 +93,7 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           use_insecure_cipher: true
-          source: "docker-compose.prod.yaml,docker/"
+          source: "docker-compose.prod.yaml,docker/,nginx/"
           target: "/home/ec2-user/"
 
       - name: Deploy to EC2 via SSH
