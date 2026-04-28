@@ -95,6 +95,7 @@ jobs:
           use_insecure_cipher: true
           source: "docker-compose.prod.yaml,docker/,nginx/"
           target: "/home/ec2-user/"
+          overwrite: true
 
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v1
