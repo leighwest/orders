@@ -82,9 +82,12 @@ jobs:
 
       - name: Start EC2 instance
         run: |
-          aws ec2 start-instances --instance-ids ${{ secrets.INSTANCE_ID }}
-          aws ec2 wait instance-running --instance-ids ${{ secrets.INSTANCE_ID }}
-          sleep 30
+          STATE=$(aws ec2 describe-instances --instance-ids ${{ secrets.INSTANCE_ID }} --query "Reservations[0].Instances[0].State.Name" --output text)
+          if [ "$STATE" != "running" ]; then
+            aws ec2 start-instances --instance-ids ${{ secrets.INSTANCE_ID }}
+            aws ec2 wait instance-running --instance-ids ${{ secrets.INSTANCE_ID }}
+            sleep 30
+          fi
 
       - name: Copy docker-compose.prod.yaml to EC2
         uses: appleboy/scp-action@v0.1.7
