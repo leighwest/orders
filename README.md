@@ -1,170 +1,183 @@
-# orders-infra
+# Orders Service
 
-Terraform infrastructure for the [orders](https://github.com/leighwest/orders) cupcake ordering service, deployed on AWS in the `ap-southeast-4` (Melbourne) region.
+A Spring Boot REST API for placing cupcake orders, built to demonstrate event-driven microservice architecture on AWS.
+
+Customers place orders via a Swagger UI. The service persists the order, sends a confirmation email, and publishes an event to AWS SQS. A Lambda function acts as a dispatch microservice — it consumes the event, processes the order, and publishes a dispatch notification. The orders service consumes that notification and sends a final dispatch email to the customer.
+
+The infrastructure is managed in a companion repo: [orders-infra](https://github.com/leighwest/orders-infra).
+
+**Live API:** [https://cupcakes-api.leighwest.dev](https://cupcakes-api.leighwest.dev) _(requires the EC2 instance to be running — use the [instance starter](http://instance-starter.leighwest.dev) to boot it)_
 
 ---
 
 ## Architecture
 
 ```
-GitHub Actions (push to main)
-        ↓
-Terraform apply
-        ↓
-AWS Infrastructure:
-- EC2 (t3.small)
-- SQS: order-created, order-dispatched
-- S3: cupcake images
-- ECR: orders Docker image repository
-- Lambda: dispatch service (Node.js)
-- SES: transactional email
-- IAM: instance role, Lambda roles (least privilege)
-- EventBridge: scheduled EC2 stop
+Customer places order (Swagger UI)
+            ↓
+   Orders Service (Spring Boot / EC2)
+   - Saves order to MySQL
+   - Sends "order received" email via SES
+   - Publishes to [SQS: order-created]
+            ↓
+   Dispatch Lambda (Node.js)
+   - Consumes from [SQS: order-created]
+   - Publishes to [SQS: order-dispatched]
+            ↓
+   Orders Service
+   - Consumes from [SQS: order-dispatched]
+   - Sends "order dispatched" email via SES
 ```
 
 ---
 
 ## Tech Stack
 
-| Layer             | Technology                  |
-| ----------------- | --------------------------- |
-| IaC               | Terraform                   |
-| Cloud             | AWS                         |
-| CI/CD             | GitHub Actions              |
-| State backend     | S3 (`orders-infra-tfstate`) |
-| Runtime           | Amazon Linux 2023 / EC2     |
-| Container runtime | Docker, Docker Compose      |
+| Layer             | Technology                               |
+| ----------------- | ---------------------------------------- |
+| Language          | Java 17                                  |
+| Framework         | Spring Boot 3.2.0                        |
+| Messaging         | AWS SQS (Spring Cloud AWS 3.1.1)         |
+| Storage           | AWS S3 (Spring Cloud AWS 3.1.1 / SDK v2) |
+| Database          | MySQL (prod), H2 (unit tests)            |
+| Email             | AWS SES + Thymeleaf templates            |
+| Testing           | JUnit 5, Mockito, Testcontainers         |
+| Infrastructure    | Terraform (see orders-infra)             |
+| CI/CD             | GitHub Actions                           |
+| Container runtime | Docker, Docker Compose                   |
 
 ---
 
 ## CI/CD
 
-Every push to `main` triggers the Terraform pipeline:
+Every push to `main` triggers the deploy pipeline:
 
 ```
 Push to main
      ↓
-terraform init (S3 backend)
+Build & test (Maven)
      ↓
-terraform fmt -check
+Build Docker image → push to ECR
      ↓
-terraform validate
+Start EC2 instance
      ↓
-terraform plan
+Upload deploy files to S3
      ↓
-terraform apply -auto-approve
+SSM send-command → pull image → docker-compose up
 ```
 
-The pipeline is defined in `.github/workflows/terraform.yml`.
+The pipeline is defined in `.github/workflows/deploy.yml`.
 
 ### Secrets required
 
-| Secret                  | Description                                                    |
-| ----------------------- | -------------------------------------------------------------- |
-| `AWS_ACCESS_KEY_ID`     | IAM credentials for Terraform                                  |
-| `AWS_SECRET_ACCESS_KEY` | IAM credentials                                                |
-| `PERSONAL_IP_ADDRESS`   | Your IP in CIDR notation — used to restrict SSH access locally |
-| `INSTANCE_ID`           | EC2 instance ID                                                |
+| Secret                  | Description                                         |
+| ----------------------- | --------------------------------------------------- |
+| `AWS_ACCESS_KEY_ID`     | IAM credentials for ECR push, EC2 start, SSM access |
+| `AWS_SECRET_ACCESS_KEY` | IAM credentials                                     |
+
+Application secrets (`MYSQL_ROOT_PASSWORD`, `MAIL_USERNAME`, `MAIL_PASSWORD`) are fetched at deploy time from AWS Systems Manager Parameter Store — not stored in GitHub secrets. Instance ID is looked up dynamically by tag at deploy time.
 
 ---
 
-## State Management
-
-Terraform state is stored remotely in S3:
-
-- **Bucket:** `orders-infra-tfstate`
-- **Key:** `orders/terraform.tfstate`
-- **Region:** `ap-southeast-4`
-- **Versioning:** enabled
-
-No DynamoDB lock — single developer workflow.
-
----
-
-## Key Resources
-
-| Resource                         | Description                                 |
-| -------------------------------- | ------------------------------------------- |
-| `aws_instance.orders`            | EC2 instance running the orders app         |
-| `aws_eip.orders-eip`             | Elastic IP — persists across stop/start     |
-| `aws_sqs_queue.order_created`    | Orders publishes, Lambda consumes           |
-| `aws_sqs_queue.order_dispatched` | Lambda publishes, orders consumes           |
-| `aws_s3_bucket.orders`           | Stores cupcake images                       |
-| `aws_ecr_repository.orders`      | Docker image repository                     |
-| `aws_lambda_function.dispatch`   | Processes orders, publishes dispatch events |
-| `aws_lambda_function.ec2_stop`   | Scheduled stop of EC2 to save cost          |
-
----
-
-## IAM Design
-
-Separate roles per service — least privilege throughout:
-
-| Role                          | Used by         | Permissions                                                              |
-| ----------------------------- | --------------- | ------------------------------------------------------------------------ |
-| `orders-ec2-instance-role`    | EC2 instance    | SQS read/write, S3, ECR pull, SSM Parameter Store read                   |
-| `orders-dispatch-lambda-role` | Dispatch Lambda | SQS consume order-created, SQS publish order-dispatched, CloudWatch logs |
-| `lambda_execution_role`       | EC2 stop Lambda | EC2 start/stop, CloudWatch logs                                          |
-
-No IAM users or access keys for the application — credentials come from the EC2 instance role.
-
----
-
-## Secrets Management
-
-Application secrets are stored in AWS Systems Manager Parameter Store:
-
-| Parameter                  | Type         | Description         |
-| -------------------------- | ------------ | ------------------- |
-| `orders_mysql_password`    | SecureString | MySQL root password |
-| `orders_ses_smtp_username` | String       | SES SMTP username   |
-| `orders_ses_smtp_password` | SecureString | SES SMTP password   |
-
-Secrets are fetched at deploy time by the `orders` pipeline — not stored in GitHub secrets.
-
----
-
-## Local Usage
+## Local Development
 
 ### Prerequisites
 
-- Terraform installed
+- Java 17
+- Docker Desktop
 - AWS CLI configured with credentials for `ap-southeast-4`
-- `terraform.tfvars` file (gitignored — see `terraform.tfvars.example`)
+- AWS SQS queues provisioned (see [orders-infra](https://github.com/leighwest/orders-infra))
 
-### Running locally
+### Setup
+
+1. Clone the repo:
 
 ```bash
-terraform init
-terraform plan -var-file="terraform.tfvars"
-terraform apply -var-file="terraform.tfvars"
+git clone https://github.com/leighwest/orders.git
+cd orders
 ```
+
+2. Create a `.env` file in the project root:
+
+```
+MAIL_USERNAME=your-gmail@example.com
+MAIL_PASSWORD=your-gmail-app-password
+```
+
+3. Start MySQL:
+
+```bash
+docker-compose up -d
+```
+
+4. Run the application with the local profile:
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+5. Open Swagger UI: [http://localhost:8080](http://localhost:8080)
+
+The `local` profile connects to the Docker MySQL instance and uses your AWS CLI credentials (`~/.aws/credentials`) for SQS and S3 access. No AWS credentials should appear in any config file.
+
+---
+
+## End-to-End Verification
+
+Once running locally, verify the full event-driven flow:
+
+1. Place a test order via Swagger UI
+2. Confirm the order is saved (check the DB or the `GET /orders` endpoint)
+3. Check your inbox — "order received" email should arrive
+4. In the AWS console, navigate to SQS → `order-created` — the message should have been consumed by the Lambda
+5. Navigate to Lambda → `orders-dispatch` → Monitor → CloudWatch Logs — confirm the Lambda executed
+6. Check your inbox again — "order dispatched" email should arrive
+
+---
+
+## Running Tests
+
+```bash
+./mvnw test
+```
+
+Integration tests use Testcontainers and require Docker Desktop to be running. Unit and service tests use H2 in-memory and have no external dependencies.
+
+| Test type      | Database               | SQS                  |
+| -------------- | ---------------------- | -------------------- |
+| Unit / service | H2 in-memory           | Mocked               |
+| Integration    | Testcontainers (MySQL) | Mocked (`@MockBean`) |
 
 ---
 
 ## Key Design Decisions
 
-| Decision                       | Rationale                                                                                                                         |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| S3 backend (no DynamoDB lock)  | Remote state without overhead — single developer                                                                                  |
-| EC2 instance role              | No credentials in config or Parameter Store for app auth                                                                          |
-| Separate IAM roles per Lambda  | Different trust boundaries and permission sets                                                                                    |
-| Direct Terraform resource refs | Avoids hardcoded ARNs, creates implicit dependency ordering                                                                       |
-| Elastic IP                     | Stable public endpoint across EC2 stop/start cycles                                                                               |
-| Scheduled EC2 stop             | Cost saving — hobby project, instance not needed 24/7                                                                             |
-| SSH open to `0.0.0.0/0`        | GitHub Actions IPs are too broad to whitelist — private key is the security boundary. Replaced with SSM Session Manager in v1.1.0 |
+| Decision                             | Rationale                                                                                   |
+| ------------------------------------ | ------------------------------------------------------------------------------------------- |
+| SQS over Kafka                       | Managed service, no broker to operate, fits single EC2 deployment                           |
+| Real AWS SQS locally                 | Consistent with prod, stronger demo story than LocalStack                                   |
+| EC2 instance role                    | No credentials in config — AWS best practice                                                |
+| Lambda as dispatch service           | Realistic microservices pattern without a second full service                               |
+| Secrets in Parameter Store           | Single source of truth, no duplication across GitHub secrets and config files               |
+| Docker Compose in prod               | Appropriate for single-instance hobby project — ECS/EKS would be the enterprise equivalent  |
+| Testcontainers for integration tests | Real MySQL dialect, isolated per run                                                        |
+| H2 for unit tests                    | Fast, no Docker required                                                                    |
+| SSM Session Manager over SSH         | No open ports, IAM-controlled access, full audit trail — enterprise standard for EC2 access |
+| S3 staging for deploy artefacts      | Replaces SCP — runner uploads, EC2 pulls via instance role. No SSH needed                   |
+| Dynamic instance ID lookup           | Looked up by tag at deploy time — no static secret to update when instance is recreated     |
 
 ---
 
 ## Related
 
-- [orders](https://github.com/leighwest/orders) — Spring Boot application
+- [orders-infra](https://github.com/leighwest/orders-infra) — Terraform infrastructure for this service
 
 ---
 
 ## Versions
 
-| Version                                                         | Description                                               |
-| --------------------------------------------------------------- | --------------------------------------------------------- |
-| [v1.0.0](https://github.com/leighwest/orders-infra/tree/v1.0.0) | t3.small + EIP, SSH access, AL2023, SQS + Lambda dispatch |
-| [v2.0.0](https://github.com/leighwest/orders-infra/tree/v2.0.0) | TBD                                                       |
+| Version                                                    | Description                                                                   |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| [v1.0.0](https://github.com/leighwest/orders/tree/v1.0.0)  | Spring Boot 17, MySQL, GitHub Actions CI/CD via SSH, HTTPS via Let's Encrypt  |
+| [v1.1.0](https://github.com/leighwest/orders/tree/v1.1.0)  | SSM Session Manager replaces SSH, S3 file staging, dynamic instance ID lookup |
+| [v2.0.0](https://github.com/leighwest/orders/tree/v2.0.0)  | TBD                                                                           |
