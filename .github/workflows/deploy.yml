@@ -87,6 +87,7 @@ jobs:
             --filters "Name=tag:Name,Values=orders-server" "Name=instance-state-name,Values=pending,running,stopping,stopped" \
             --query "Reservations[0].Instances[0].InstanceId" \
             --output text)
+          echo "Found instance ID: $INSTANCE_ID"
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
 
       - name: Start EC2 instance
