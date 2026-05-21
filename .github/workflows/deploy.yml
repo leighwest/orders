@@ -87,15 +87,17 @@ jobs:
             --filters "Name=tag:Name,Values=orders-server" "Name=instance-state-name,Values=pending,running,stopping,stopped" \
             --query "Reservations[0].Instances[0].InstanceId" \
             --output text)
-          echo "Found instance ID: $INSTANCE_ID"
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
 
       - name: Start EC2 instance
         run: |
-          STATE=$(aws ec2 describe-instances --instance-ids ${{ secrets.INSTANCE_ID }} --query "Reservations[0].Instances[0].State.Name" --output text)
+          STATE=$(aws ec2 describe-instances \
+            --instance-ids ${{ steps.get-instance-id.outputs.instance_id }} \
+            --query "Reservations[0].Instances[0].State.Name" \
+            --output text)
           if [ "$STATE" != "running" ]; then
-            aws ec2 start-instances --instance-ids ${{ secrets.INSTANCE_ID }}
-            aws ec2 wait instance-running --instance-ids ${{ secrets.INSTANCE_ID }}
+            aws ec2 start-instances --instance-ids ${{ steps.get-instance-id.outputs.instance_id }}
+            aws ec2 wait instance-running --instance-ids ${{ steps.get-instance-id.outputs.instance_id }}
             sleep 30
           fi
 
