@@ -84,7 +84,7 @@ jobs:
         id: get-instance-id
         run: |
           INSTANCE_ID=$(aws ec2 describe-instances \
-            --filters "Name=tag:Name,Values=orders-server" \
+            --filters "Name=tag:Name,Values=orders-server" "Name=instance-state-name,Values=pending,running,stopping,stopped" \
             --query "Reservations[0].Instances[0].InstanceId" \
             --output text)
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
