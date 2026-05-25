@@ -2,6 +2,12 @@
 
 ---
 
+## 2026-05-24
+
+Spring Boot Actuator health endpoint (`/actuator/health`) added — used by the EC2 start Lambda to confirm the app is ready before updating DNS.
+
+---
+
 ## 2026-05-21 | v1.1.0
 
 Deploy pipeline updated to use SSM Session Manager instead of SSH. Files are now staged through S3 and pulled by the EC2 instance rather than copied via SCP. Instance ID is looked up dynamically by tag rather than stored as a static secret. SSH key and host secrets removed from GitHub.
