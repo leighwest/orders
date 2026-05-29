@@ -2,6 +2,12 @@
 
 ---
 
+## 2026-05-29
+
+JaCoCo coverage reporting added (bumped from 0.8.7 to 0.8.12, report phase changed from `test` to `verify` to include integration tests). Codecov integration added via `codecov-action@v6` — initial coverage 74%. Build status, coverage, Java, and Spring Boot badges added to README.
+
+---
+
 ## 2026-05-24
 
 Spring Boot Actuator health endpoint (`/actuator/health`) added — used by the EC2 start Lambda to confirm the app is ready before updating DNS.
