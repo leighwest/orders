@@ -1,5 +1,10 @@
 # Orders Service
 
+[![Build](https://github.com/leighwest/orders/actions/workflows/deploy.yml/badge.svg)](https://github.com/leighwest/orders/actions/workflows/deploy.yml)
+[![codecov](https://codecov.io/gh/leighwest/orders/graph/badge.svg?token=24743b25-fbf6-4bed-8708-6cc4b39fc666)](https://codecov.io/gh/leighwest/orders)
+[![Java](https://img.shields.io/badge/Java-17-blue?logo=openjdk)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-brightgreen?logo=spring)](https://spring.io/projects/spring-boot)
+
 A Spring Boot REST API for placing cupcake orders, built to demonstrate event-driven microservice architecture on AWS.
 
 Customers place orders via a Swagger UI. The service persists the order, sends a confirmation email, and publishes an event to AWS SQS. A Lambda function acts as a dispatch microservice — it consumes the event, processes the order, and publishes a dispatch notification. The orders service consumes that notification and sends a final dispatch email to the customer.
