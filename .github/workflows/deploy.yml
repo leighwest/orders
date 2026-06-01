@@ -64,6 +64,7 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build \
+            --platform linux/arm64 \
             -f docker/Dockerfile.orders.prod \
             -t $REGISTRY/orders:$IMAGE_TAG \
             -t $REGISTRY/orders:latest \
