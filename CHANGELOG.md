@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-06-01
+
+Nginx simplified to HTTP-only — CloudFront terminates SSL, Nginx just proxies to Spring Boot on port 80. HTTPS server block, HTTP→HTTPS redirect, and Let's Encrypt cert paths removed from `nginx.conf`. Port 443 and `/etc/letsencrypt` volume mount removed from `docker-compose.prod.yaml`.
+
+Docker image now built for `linux/arm64` — `--platform linux/arm64` added to `docker build` in `deploy.yml` for Graviton (t4g) compatibility.
+
+SSM deploy commands consolidated into a single shell script (`deploy.sh`) uploaded to S3 — fixes env var persistence across SSM command array steps.
+
+---
+
 ## 2026-05-29
 
 JaCoCo coverage reporting added (bumped from 0.8.7 to 0.8.12, report phase changed from `test` to `verify` to include integration tests). Codecov integration added via `codecov-action@v6` — initial coverage 74%. Build status, coverage, Java, and Spring Boot badges added to README.
