@@ -11,7 +11,7 @@ Customers place orders via a Swagger UI. The service persists the order, sends a
 
 The infrastructure is managed in a companion repo: [orders-infra](https://github.com/leighwest/orders-infra).
 
-**Live API:** [https://cupcakes-api.leighwest.dev](https://cupcakes-api.leighwest.dev) _(requires the EC2 instance to be running — use the [instance starter](http://instance-starter.leighwest.dev) to boot it)_
+**Live API:** [https://cupcakes-api.leighwest.dev](https://cupcakes-api.leighwest.dev) *(open 7am–8pm AEST — CloudFront serves a closed page overnight)*
 
 ---
 
@@ -50,6 +50,8 @@ Customer places order (Swagger UI)
 | Infrastructure    | Terraform (see orders-infra)             |
 | CI/CD             | GitHub Actions                           |
 | Container runtime | Docker, Docker Compose                   |
+| Reverse proxy     | Nginx (HTTP only — SSL terminated at CloudFront) |
+| CDN / HTTPS       | AWS CloudFront + ACM                     |
 
 ---
 
@@ -170,6 +172,7 @@ Integration tests use Testcontainers and require Docker Desktop to be running. U
 | SSM Session Manager over SSH         | No open ports, IAM-controlled access, full audit trail — enterprise standard for EC2 access |
 | S3 staging for deploy artefacts      | Replaces SCP — runner uploads, EC2 pulls via instance role. No SSH needed                   |
 | Dynamic instance ID lookup           | Looked up by tag at deploy time — no static secret to update when instance is recreated     |
+| Nginx HTTP-only                      | CloudFront terminates SSL — Nginx just proxies to Spring Boot on port 80. No cert paths needed |
 
 ---
 
@@ -185,4 +188,4 @@ Integration tests use Testcontainers and require Docker Desktop to be running. U
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | [v1.0.0](https://github.com/leighwest/orders/tree/v1.0.0)  | Spring Boot 17, MySQL, GitHub Actions CI/CD via SSH, HTTPS via Let's Encrypt  |
 | [v1.1.0](https://github.com/leighwest/orders/tree/v1.1.0)  | SSM Session Manager replaces SSH, S3 file staging, dynamic instance ID lookup |
-| [v2.0.0](https://github.com/leighwest/orders/tree/v2.0.0)  | TBD                                                                           |
+| v1.2.0 | Nginx simplified to HTTP-only, Docker image built for linux/arm64 (Graviton), SSM deploy commands consolidated into single shell script |
