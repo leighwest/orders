@@ -44,7 +44,7 @@ Customer places order (Swagger UI)
 | Framework         | Spring Boot 3.2.0                        |
 | Messaging         | AWS SQS (Spring Cloud AWS 3.1.1)         |
 | Storage           | AWS S3 (Spring Cloud AWS 3.1.1 / SDK v2) |
-| Database          | MySQL (prod), H2 (unit tests)            |
+| Database          | Postgres (prod), H2 (unit tests), Testcontainers/Postgres (integration tests) |
 | Email             | AWS SES + Thymeleaf templates            |
 | Testing           | JUnit 5, Mockito, Testcontainers         |
 | Infrastructure    | Terraform (see orders-infra)             |
@@ -82,7 +82,7 @@ The pipeline is defined in `.github/workflows/deploy.yml`.
 | `AWS_ACCESS_KEY_ID`     | IAM credentials for ECR push, EC2 start, SSM access |
 | `AWS_SECRET_ACCESS_KEY` | IAM credentials                                     |
 
-Application secrets (`MYSQL_ROOT_PASSWORD`, `MAIL_USERNAME`, `MAIL_PASSWORD`) are fetched at deploy time from AWS Systems Manager Parameter Store — not stored in GitHub secrets. Instance ID is looked up dynamically by tag at deploy time.
+Application secrets (`POSTGRES_PASSWORD`, `MAIL_USERNAME`, `MAIL_PASSWORD`) are fetched at deploy time from AWS Systems Manager Parameter Store — not stored in GitHub secrets. Instance ID is looked up dynamically by tag at deploy time.
 
 ---
 
@@ -104,14 +104,14 @@ git clone https://github.com/leighwest/orders.git
 cd orders
 ```
 
-2. Create a `.env` file in the project root:
+2. Create a `.env` file in the project root (use `.env.example` as a reference):
 
 ```
 MAIL_USERNAME=your-gmail@example.com
-MAIL_PASSWORD=your-gmail-app-password
+POSTGRES_PASSWORD=your-postgres-password
 ```
 
-3. Start MySQL:
+3. Start Postgres:
 
 ```bash
 docker-compose up -d
@@ -125,7 +125,7 @@ docker-compose up -d
 
 5. Open Swagger UI: [http://localhost:8080](http://localhost:8080)
 
-The `local` profile connects to the Docker MySQL instance and uses your AWS CLI credentials (`~/.aws/credentials`) for SQS and S3 access. No AWS credentials should appear in any config file.
+The `local` profile connects to the Docker Postgres instance and uses your AWS CLI credentials (`~/.aws/credentials`) for SQS and S3 access. No AWS credentials should appear in any config file.
 
 ---
 
@@ -153,7 +153,7 @@ Integration tests use Testcontainers and require Docker Desktop to be running. U
 | Test type      | Database               | SQS                  |
 | -------------- | ---------------------- | -------------------- |
 | Unit / service | H2 in-memory           | Mocked               |
-| Integration    | Testcontainers (MySQL) | Mocked (`@MockBean`) |
+| Integration    | Testcontainers (Postgres) | Mocked (`@MockBean`) |
 
 ---
 
@@ -167,8 +167,10 @@ Integration tests use Testcontainers and require Docker Desktop to be running. U
 | Lambda as dispatch service           | Realistic microservices pattern without a second full service                               |
 | Secrets in Parameter Store           | Single source of truth, no duplication across GitHub secrets and config files               |
 | Docker Compose in prod               | Appropriate for single-instance hobby project — ECS/EKS would be the enterprise equivalent  |
-| Testcontainers for integration tests | Real MySQL dialect, isolated per run                                                        |
+| Testcontainers for integration tests | Real Postgres dialect, isolated per run                                                     |
 | H2 for unit tests                    | Fast, no Docker required                                                                    |
+| Postgres over MySQL                  | ~400 MiB lower idle memory footprint, better GraalVM compatibility, stronger CV signal      |
+| Flyway for schema management         | Versioned, reproducible migrations with full history — replaces `ddl-auto=update` which can't drop columns and leaves no audit trail |
 | SSM Session Manager over SSH         | No open ports, IAM-controlled access, full audit trail — enterprise standard for EC2 access |
 | S3 staging for deploy artefacts      | Replaces SCP — runner uploads, EC2 pulls via instance role. No SSH needed                   |
 | Dynamic instance ID lookup           | Looked up by tag at deploy time — no static secret to update when instance is recreated     |
@@ -189,3 +191,4 @@ Integration tests use Testcontainers and require Docker Desktop to be running. U
 | [v1.0.0](https://github.com/leighwest/orders/tree/v1.0.0)  | Spring Boot 17, MySQL, GitHub Actions CI/CD via SSH, HTTPS via Let's Encrypt  |
 | [v1.1.0](https://github.com/leighwest/orders/tree/v1.1.0)  | SSM Session Manager replaces SSH, S3 file staging, dynamic instance ID lookup |
 | v1.2.0 | Nginx simplified to HTTP-only, Docker image built for linux/arm64 (Graviton), SSM deploy commands consolidated into single shell script |
+| v1.3.0 | MySQL replaced with Postgres, Flyway added for schema management, deploy script extracted to scripts/deploy.sh |

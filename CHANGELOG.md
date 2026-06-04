@@ -2,7 +2,19 @@
 
 ---
 
-## 2026-06-01
+## 2026-06-04 | v1.3.0
+
+Migrated from MySQL to Postgres. Flyway added for schema management — `ddl-auto` changed from `update` to `validate`, initial schema in `V1__init.sql`. Docker Compose healthcheck added for Postgres with `depends_on: condition: service_healthy` on the app container, replacing the Hikari indefinite retry workaround.
+
+Deploy script extracted from inline SSM commands into `scripts/deploy.sh`, uploaded to S3 and executed as a single SSM command.
+
+JPA entity fixes: bidirectional `Customer` ↔ `Order` relationship corrected with `mappedBy`, explicit `@JoinColumn` added to `OrderItem`, `CascadeType.ALL` on `Order → Customer` replaced with `PERSIST` and `MERGE`.
+
+pom.xml: Spring Cloud AWS and Testcontainers versions moved into `dependencyManagement` BOMs, dead MapStruct properties removed, Flyway dependency added.
+
+---
+
+## 2026-06-01 | v1.2.0 
 
 Nginx simplified to HTTP-only — CloudFront terminates SSL, Nginx just proxies to Spring Boot on port 80. HTTPS server block, HTTP→HTTPS redirect, and Let's Encrypt cert paths removed from `nginx.conf`. Port 443 and `/etc/letsencrypt` volume mount removed from `docker-compose.prod.yaml`.
 
