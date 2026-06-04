@@ -21,12 +21,15 @@ class CupcakeRepositoryTest {
     @Autowired
     private CupcakeRepository cupcakeRepository;
 
+    @Autowired
+    private ImageRepository imageRepository;
+
     @Test
     public void shouldReturn_cupcake_whenFindByProductCode() {
 
-        Image chocolateCupcakeImage = new Image(null, "CHOC001", "bucketName", "objectKey");
+        Image savedImage = imageRepository.save(new Image(null, "CHOC001", "bucketName", "objectKey"));
         Cupcake chocolateCupcake = new Cupcake(null, "CHOC001", Cupcake.Flavour.CHOCOLATE,
-                BigDecimal.valueOf(3.50), chocolateCupcakeImage);
+                BigDecimal.valueOf(3.50), savedImage);
         Cupcake savedCupcake = cupcakeRepository.save(chocolateCupcake);
 
         Cupcake found = cupcakeRepository.findByProductCode(savedCupcake.getProductCode());
