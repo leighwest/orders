@@ -9,6 +9,7 @@ import io.awspring.cloud.sqs.annotation.SqsListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -21,6 +22,7 @@ public class DispatchEventSqsListener {
     private final OrderRepository orderRepository;
 
     @SqsListener("${sqs.order-dispatched-queue}")
+    @Transactional
     public void receive(DispatchOrder payload) {
         log.info("SQS message received with payload: {}", payload);
 
