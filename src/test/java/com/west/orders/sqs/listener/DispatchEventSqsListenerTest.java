@@ -1,5 +1,6 @@
 package com.west.orders.sqs.listener;
 
+import com.west.orders.entity.Cupcake;
 import com.west.orders.entity.Order;
 import com.west.orders.entity.OrderItem;
 import com.west.orders.sqs.message.DispatchOrder;
@@ -79,7 +80,7 @@ class DispatchEventSqsListenerTest {
                 .customerOrderRef(21234412L)
                 .items(List.of(OrderItem.builder()
                         .productCode("CHOC001")
-                        .cupcakeId(1L)
+                        .cupcake(Cupcake.builder().id(1L).productCode("CHOC001").build())
                         .count(5)
                         .build()))
                 .totalPrice(BigDecimal.valueOf(32.00))

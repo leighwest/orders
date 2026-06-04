@@ -1,9 +1,6 @@
 package com.west.orders.repository;
 
-import com.west.orders.entity.Address;
-import com.west.orders.entity.Customer;
-import com.west.orders.entity.Order;
-import com.west.orders.entity.OrderItem;
+import com.west.orders.entity.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -14,8 +11,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-import static com.west.orders.TestUtils.createAddress;
-import static com.west.orders.TestUtils.createCustomer;
+import static com.west.orders.TestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -27,8 +23,13 @@ class OrderRepositoryTest {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private CupcakeRepository cupcakeRepository;
+
     @Test
     public void shouldReturn_savedOrder_whenSave() {
+
+        Cupcake savedCupcake = cupcakeRepository.save(createCupcake());
 
         Customer customer = createCustomer();
 
@@ -41,7 +42,7 @@ class OrderRepositoryTest {
                 .shippingAddress(address)
                 .items(List.of(OrderItem.builder()
                         .productCode("CHOC001")
-                        .cupcakeId(1L)
+                        .cupcake(savedCupcake)
                         .count(5)
                         .unitPrice(BigDecimal.valueOf(3.5))
                         .build()))

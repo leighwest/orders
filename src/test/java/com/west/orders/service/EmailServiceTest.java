@@ -9,6 +9,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -30,7 +33,7 @@ class EmailServiceTest {
         String expectedPath = "mail/email-order-received.html";
         String templateName = EmailTemplate.ORDER_RECEIVED_EMAIL.getTemplateName();
         OrderReceivedMailMetadata metadata = new OrderReceivedMailMetadata(
-                "Leigh", 1234L
+                "Leigh", 1234L, List.of(), BigDecimal.ZERO
         );
 
         Context context = mock(Context.class);

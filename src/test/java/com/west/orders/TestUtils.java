@@ -5,8 +5,10 @@ import com.west.orders.dto.CustomerDto;
 import com.west.orders.dto.OrderItemDto;
 import com.west.orders.dto.request.InitialOrderRequestModel;
 import com.west.orders.entity.Address;
+import com.west.orders.entity.Cupcake;
 import com.west.orders.entity.Customer;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class TestUtils {
@@ -27,6 +29,15 @@ public class TestUtils {
                 .suburb("Exampleton")
                 .postCode("3000")
                 .state(Address.State.VIC)
+                .build();
+    }
+
+    public static Cupcake createCupcake() {
+        return Cupcake.builder()
+                .id(1L)
+                .productCode("CHOC001")
+                .flavour(Cupcake.Flavour.CHOCOLATE)
+                .unitPrice(BigDecimal.valueOf(3.50))
                 .build();
     }
 

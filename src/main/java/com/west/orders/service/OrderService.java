@@ -101,7 +101,7 @@ public class OrderService {
                 throw new EntityNotFoundException("An internal error occurred. Please try again later.");
             }
             return OrderItem.builder()
-                    .cupcakeId(cupcakeEntity.getId())
+                    .cupcake(cupcakeEntity)
                     .productCode(cupcakeRequest.getProductCode())
                     .count(cupcakeRequest.getCount())
                     .unitPrice(cupcakeEntity.getUnitPrice())

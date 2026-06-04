@@ -26,8 +26,9 @@ public class OrderItem {
     @Column(nullable = false)
     private String productCode;
 
-    @Column(nullable = false)
-    private Long cupcakeId;
+    @ManyToOne
+    @JoinColumn(name = "cupcake_id", nullable = false)
+    private Cupcake cupcake;
 
     @Column(nullable = false)
     private int count;
