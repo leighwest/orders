@@ -24,14 +24,14 @@ class CupcakeRepositoryTest {
     @Test
     public void shouldReturn_cupcake_whenFindByProductCode() {
 
-        Image chocolateCupcakeImage = new Image(1L, "CHOC001", "bucketName", "objectKey");
-        Cupcake chocolateCupcake = new Cupcake(1L, "CHOC001", Cupcake.Flavour.CHOCOLATE,
+        Image chocolateCupcakeImage = new Image(null, "CHOC001", "bucketName", "objectKey");
+        Cupcake chocolateCupcake = new Cupcake(null, "CHOC001", Cupcake.Flavour.CHOCOLATE,
                 BigDecimal.valueOf(3.50), chocolateCupcakeImage);
-        cupcakeRepository.save(chocolateCupcake);
+        Cupcake savedCupcake = cupcakeRepository.save(chocolateCupcake);
 
-        Cupcake cupcake = cupcakeRepository.findByProductCode(chocolateCupcake.getProductCode());
+        Cupcake found = cupcakeRepository.findByProductCode(savedCupcake.getProductCode());
 
-        assertThat(cupcake.getId()).isEqualTo(1L);
-        assertThat(cupcake.getFlavour()).isEqualTo(Cupcake.Flavour.CHOCOLATE);
+        assertThat(found.getId()).isEqualTo(savedCupcake.getId());
+        assertThat(found.getFlavour()).isEqualTo(Cupcake.Flavour.CHOCOLATE);
     }
 }
