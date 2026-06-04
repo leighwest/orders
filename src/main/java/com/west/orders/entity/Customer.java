@@ -28,7 +28,6 @@ public class Customer {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "customer_id", referencedColumnName = "id")
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders;
 }

@@ -1,31 +1,31 @@
 services:
-  mysql:
-    container_name: mysql
-    image: mysql:8
+  postgres:
+    container_name: postgres
+    image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: orders
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: orders
     ports:
-      - 3306:3306
+      - 5432:5432
     volumes:
-      - data:/var/lib/mysql
+      - data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   orders:
     container_name: orders
     image: ${ORDERS_IMAGE}
     environment:
-      MYSQL_HOST: mysql
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      POSTGRES_HOST: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
     restart: unless-stopped
 

@@ -112,6 +112,7 @@ jobs:
         run: |
           aws s3 cp docker-compose.prod.yaml s3://orders-deploy-artefacts/docker-compose.prod.yaml
           aws s3 cp nginx/nginx.conf s3://orders-deploy-artefacts/nginx/nginx.conf
+          aws s3 cp scripts/deploy.sh s3://orders-deploy-artefacts/deploy.sh
 
       - name: Deploy via SSM
         run: |
@@ -119,28 +120,19 @@ jobs:
             --instance-ids ${{ steps.get-instance-id.outputs.instance_id }} \
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=[
-              "aws s3 cp s3://orders-deploy-artefacts/docker-compose.prod.yaml /home/ec2-user/docker-compose.prod.yaml",
-              "mkdir -p /home/ec2-user/nginx",
-              "aws s3 cp s3://orders-deploy-artefacts/nginx/nginx.conf /home/ec2-user/nginx/nginx.conf",
-              "REGISTRY=$(aws sts get-caller-identity --query Account --output text).dkr.ecr.ap-southeast-4.amazonaws.com",
-              "aws ecr get-login-password --region ap-southeast-4 | docker login --username AWS --password-stdin $REGISTRY",
-              "export MYSQL_ROOT_PASSWORD=$(aws ssm get-parameter --name orders_mysql_password --with-decryption --query Parameter.Value --output text --region ap-southeast-4)",
-              "export MAIL_USERNAME=$(aws ssm get-parameter --name orders_ses_smtp_username --with-decryption --query Parameter.Value --output text --region ap-southeast-4)",
-              "export MAIL_PASSWORD=$(aws ssm get-parameter --name orders_ses_smtp_password --with-decryption --query Parameter.Value --output text --region ap-southeast-4)",
-              "export ORDERS_IMAGE=$REGISTRY/orders:latest",
-              "docker-compose -f /home/ec2-user/docker-compose.prod.yaml pull",
-              "docker-compose -f /home/ec2-user/docker-compose.prod.yaml up -d",
-              "docker image prune -f"
+              "aws s3 cp s3://orders-deploy-artefacts/deploy.sh /home/ec2-user/deploy.sh",
+              "chmod +x /home/ec2-user/deploy.sh",
+              "bash /home/ec2-user/deploy.sh"
             ]' \
             --query "Command.CommandId" \
             --output text)
 
           aws ssm wait command-executed \
-          --command-id $COMMAND_ID \
-          --instance-id ${{ steps.get-instance-id.outputs.instance_id }}
-          
+            --command-id $COMMAND_ID \
+            --instance-id ${{ steps.get-instance-id.outputs.instance_id }}
+
           aws ssm get-command-invocation \
-          --command-id $COMMAND_ID \
-          --instance-id ${{ steps.get-instance-id.outputs.instance_id }} \
-          --query "[Status, StandardOutputContent, StandardErrorContent]" \
-          --output text
+            --command-id $COMMAND_ID \
+            --instance-id ${{ steps.get-instance-id.outputs.instance_id }} \
+            --query "[Status, StandardOutputContent, StandardErrorContent]" \
+            --output text

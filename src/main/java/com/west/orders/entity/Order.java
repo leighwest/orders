@@ -25,7 +25,7 @@ public class Order {
     @Column(nullable = false)
     private Long customerOrderRef;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
