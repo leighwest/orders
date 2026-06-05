@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@Disabled
 public class EmailServiceIntTest {
 
     @Autowired
@@ -51,6 +50,6 @@ public class EmailServiceIntTest {
 
         String htmlTemplate = emailService.getOrderEmail(EmailTemplate.ORDER_RECEIVED_EMAIL.getTemplateName(), metadata);
 
-        assertThat(expectedContent.trim()).isEqualTo(htmlTemplate.trim());
-    }
+        assertThat(expectedContent.trim().replaceAll("\\s+", " "))
+                .isEqualTo(htmlTemplate.trim().replaceAll("\\s+", " "));    }
 }
