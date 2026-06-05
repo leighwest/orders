@@ -2,8 +2,8 @@
 
 [![Build](https://github.com/leighwest/orders/actions/workflows/deploy.yml/badge.svg)](https://github.com/leighwest/orders/actions/workflows/deploy.yml)
 [![codecov](https://codecov.io/gh/leighwest/orders/graph/badge.svg?token=24743b25-fbf6-4bed-8708-6cc4b39fc666)](https://codecov.io/gh/leighwest/orders)
-[![Java](https://img.shields.io/badge/Java-17-blue?logo=openjdk)](https://openjdk.org/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-brightgreen?logo=spring)](https://spring.io/projects/spring-boot)
+[![Java](https://img.shields.io/badge/Java-21-blue?logo=openjdk)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.6-brightgreen?logo=spring)](https://spring.io/projects/spring-boot)
 
 A Spring Boot REST API for placing cupcake orders, built to demonstrate event-driven microservice architecture on AWS.
 
@@ -21,7 +21,7 @@ The infrastructure is managed in a companion repo: [orders-infra](https://github
 Customer places order (Swagger UI)
             ↓
    Orders Service (Spring Boot / EC2)
-   - Saves order to MySQL
+   - Saves order to Postgres
    - Sends "order received" email via SES
    - Publishes to [SQS: order-created]
             ↓
@@ -40,10 +40,10 @@ Customer places order (Swagger UI)
 
 | Layer             | Technology                               |
 | ----------------- | ---------------------------------------- |
-| Language          | Java 17                                  |
-| Framework         | Spring Boot 3.2.0                        |
-| Messaging         | AWS SQS (Spring Cloud AWS 3.1.1)         |
-| Storage           | AWS S3 (Spring Cloud AWS 3.1.1 / SDK v2) |
+| Language          | Java 21                                  |
+| Framework         | Spring Boot 3.3.6                        |
+| Messaging         | AWS SQS (Spring Cloud AWS 3.2.1)         |
+| Storage           | AWS S3 (Spring Cloud AWS 3.2.1 / SDK v2) |
 | Database          | Postgres (prod), H2 (unit tests), Testcontainers/Postgres (integration tests) |
 | Email             | AWS SES + Thymeleaf templates            |
 | Testing           | JUnit 5, Mockito, Testcontainers         |
@@ -90,7 +90,7 @@ Application secrets (`POSTGRES_PASSWORD`, `MAIL_USERNAME`, `MAIL_PASSWORD`) are 
 
 ### Prerequisites
 
-- Java 17
+- Java 21
 - Docker Desktop
 - AWS CLI configured with credentials for `ap-southeast-4`
 - AWS SQS queues provisioned (see [orders-infra](https://github.com/leighwest/orders-infra))
@@ -192,3 +192,4 @@ Integration tests use Testcontainers and require Docker Desktop to be running. U
 | [v1.1.0](https://github.com/leighwest/orders/tree/v1.1.0)  | SSM Session Manager replaces SSH, S3 file staging, dynamic instance ID lookup |
 | v1.2.0 | Nginx simplified to HTTP-only, Docker image built for linux/arm64 (Graviton), SSM deploy commands consolidated into single shell script |
 | v1.3.0 | MySQL replaced with Postgres, Flyway added for schema management, deploy script extracted to scripts/deploy.sh |
+| v1.4.0 | Java 21, Spring Boot 3.3.6, Spring Cloud AWS 3.2.1, SerialGC + heap tuning, virtual threads, enriched email templates with item details and images |

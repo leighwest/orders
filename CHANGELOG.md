@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-06-05
+
+Upgraded to Java 21 and Spring Boot 3.3.6. Spring Cloud AWS bumped to 3.2.1. Base Docker image switched from `eclipse-temurin:17-jre-jammy` to `eclipse-temurin:21-jre-alpine`. JVM tuned for low-memory single-instance operation: SerialGC, 256 MB heap cap, 256k stack per thread. Virtual threads enabled. `flyway-database-postgresql` added — required for Flyway 10.x compatibility with Postgres 16 on Boot 3.3.x.
+
+`OrderItem` entity refactored — bare `cupcakeId: Long` replaced with a proper `@ManyToOne Cupcake` reference. `V2__add_cupcake_fk.sql` formalises the FK constraint. `displayName` field added to `Cupcake` with `V3__add_cupcake_display_name.sql`. `OrderItemEmailDto` introduced for email rendering.
+
+Both email templates rewritten — item list with cupcake images, per-item line totals, order reference block, and footer. `cupcake-orders-images` S3 bucket made public. `@Transactional` added to `DispatchEventSqsListener.receive` to fix `LazyInitializationException` on the `Order.items` collection when building dispatched email metadata. `.gitattributes` added to normalise line endings across WSL/Windows.
+
+---
 ## 2026-06-04 | v1.3.0
 
 Migrated from MySQL to Postgres. Flyway added for schema management — `ddl-auto` changed from `update` to `validate`, initial schema in `V1__init.sql`. Docker Compose healthcheck added for Postgres with `depends_on: condition: service_healthy` on the app container, replacing the Hikari indefinite retry workaround.
