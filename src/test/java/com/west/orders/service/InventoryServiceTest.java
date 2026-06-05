@@ -122,9 +122,9 @@ class InventoryServiceTest {
     }
 
     private List<Cupcake> createCupcakes(List<Image> images) {
-        Cupcake chocolateCupcake = new Cupcake(1L, "CHOC001", Cupcake.Flavour.CHOCOLATE,
+        Cupcake chocolateCupcake = new Cupcake(1L, "CHOC001", "Belgian Chocolate", Cupcake.Flavour.CHOCOLATE,
                 BigDecimal.valueOf(3.50), images.get(0));
-        Cupcake vanillaCupcake = new Cupcake(2L, "VAN001", Cupcake.Flavour.VANILLA,
+        Cupcake vanillaCupcake = new Cupcake(2L, "VAN001", "Classic Vanilla", Cupcake.Flavour.VANILLA,
                 BigDecimal.valueOf(3.50), images.get(1));
         return List.of(chocolateCupcake, vanillaCupcake);
     }
