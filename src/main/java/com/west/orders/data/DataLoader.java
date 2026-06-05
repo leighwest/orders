@@ -33,9 +33,9 @@ public class DataLoader implements CommandLineRunner {
         imageRepository.save(vanillaImage);
         imageRepository.save(lemonImage);
 
-        Cupcake chocolateCupcake = new Cupcake(1L, "CHOC001", Cupcake.Flavour.CHOCOLATE, BigDecimal.valueOf(3.50), chocolateImage);
-        Cupcake vanillaCupcake = new Cupcake(2L, "VAN001", Cupcake.Flavour.VANILLA,  BigDecimal.valueOf(3.50), vanillaImage);
-        Cupcake lemonCupcake = new Cupcake(3L, "LEM001", Cupcake.Flavour.LEMON,  BigDecimal.valueOf(3.50), lemonImage);
+        Cupcake chocolateCupcake = new Cupcake(1L, "CHOC001", "Belgian Chocolate", Cupcake.Flavour.CHOCOLATE, BigDecimal.valueOf(3.50), chocolateImage);
+        Cupcake vanillaCupcake = new Cupcake(2L, "VAN001", "Classic Vanilla", Cupcake.Flavour.VANILLA, BigDecimal.valueOf(3.50), vanillaImage);
+        Cupcake lemonCupcake = new Cupcake(3L, "LEM001", "Lemon Delight", Cupcake.Flavour.LEMON, BigDecimal.valueOf(3.50), lemonImage);
 
         cupcakeRepository.save(chocolateCupcake);
         cupcakeRepository.save(vanillaCupcake);

@@ -43,7 +43,7 @@ public class OrderReceivedEmailSender {
 
         List<OrderItemEmailDto> items = order.getItems().stream()
                 .map(item -> new OrderItemEmailDto(
-                        item.getProductCode(),
+                        item.getCupcake().getDisplayName(),
                         item.getCount(),
                         item.getUnitPrice().multiply(BigDecimal.valueOf(item.getCount())),
                         imagesBaseUrl + "/" + item.getCupcake().getImage().getObjectKey()

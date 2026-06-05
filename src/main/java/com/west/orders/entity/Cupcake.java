@@ -29,6 +29,9 @@ public class Cupcake {
     @Column(unique = true, nullable = false)
     private String productCode;
 
+    @Column(nullable = false)
+    private String displayName;
+
     @Column(unique = true, nullable = false)
     @Enumerated(EnumType.STRING)
     private Flavour flavour;

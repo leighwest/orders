@@ -34,8 +34,8 @@ public class TestUtils {
 
     public static Cupcake createCupcake() {
         return Cupcake.builder()
-                .id(1L)
                 .productCode("CHOC001")
+                .displayName("Belgian Chocolate")
                 .flavour(Cupcake.Flavour.CHOCOLATE)
                 .unitPrice(BigDecimal.valueOf(3.50))
                 .build();
