@@ -2,7 +2,7 @@
 
 ---
 
-## 2026-06-05
+## 2026-06-05 | v1.4.0
 
 Upgraded to Java 21 and Spring Boot 3.3.6. Spring Cloud AWS bumped to 3.2.1. Base Docker image switched from `eclipse-temurin:17-jre-jammy` to `eclipse-temurin:21-jre-alpine`. JVM tuned for low-memory single-instance operation: SerialGC, 256 MB heap cap, 256k stack per thread. Virtual threads enabled. `flyway-database-postgresql` added — required for Flyway 10.x compatibility with Postgres 16 on Boot 3.3.x.
 

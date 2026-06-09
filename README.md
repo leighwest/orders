@@ -190,6 +190,6 @@ Integration tests use Testcontainers and require Docker Desktop to be running. U
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | [v1.0.0](https://github.com/leighwest/orders/tree/v1.0.0)  | Spring Boot 17, MySQL, GitHub Actions CI/CD via SSH, HTTPS via Let's Encrypt  |
 | [v1.1.0](https://github.com/leighwest/orders/tree/v1.1.0)  | SSM Session Manager replaces SSH, S3 file staging, dynamic instance ID lookup |
-| v1.2.0 | Nginx simplified to HTTP-only, Docker image built for linux/arm64 (Graviton), SSM deploy commands consolidated into single shell script |
-| v1.3.0 | MySQL replaced with Postgres, Flyway added for schema management, deploy script extracted to scripts/deploy.sh |
-| v1.4.0 | Java 21, Spring Boot 3.3.6, Spring Cloud AWS 3.2.1, SerialGC + heap tuning, virtual threads, enriched email templates with item details and images |
+| [v1.2.0](https://github.com/leighwest/orders/tree/v1.2.0) | Nginx simplified to HTTP-only, Docker image built for linux/arm64 (Graviton), SSM deploy commands consolidated into single shell script |
+| [v1.3.0](https://github.com/leighwest/orders/tree/v1.3.0) | MySQL replaced with Postgres, Flyway added for schema management, deploy script extracted to scripts/deploy.sh |
+| [v1.4.0](https://github.com/leighwest/orders/tree/v1.4.0) | Java 21, Spring Boot 3.3.6, Spring Cloud AWS 3.2.1, SerialGC + heap tuning, virtual threads, enriched email templates with item details and images |
