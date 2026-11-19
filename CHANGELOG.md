@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-11-19 
+
+Email now goes through the SES API instead of the SES SMTP interface. `spring-cloud-aws-starter-ses` supplies a `JavaMailSender` backed by `SendRawEmail`, so `EmailService` is unchanged; `spring-boot-starter-mail` stays for Jakarta Mail and `MimeMessageHelper`. Credentials come from the default AWS chain (the EC2 instance role in prod, an AWS profile locally), so the app no longer needs the `orders-ses-smtp-user` IAM user or its SMTP password. `spring.mail.*` removed from both profiles (SES SMTP in prod, Gmail SMTP locally) and `spring.cloud.aws.ses.region=ap-southeast-2` added, since SES is in Sydney while everything else is in Melbourne. The matching IAM grant (`ses:SendEmail` and `ses:SendRawEmail` on the `cupcake-orders@leighwest.dev` identity) and the IMDS hop limit the container needs to reach the role are in orders-infra. `MAIL_USERNAME`/`MAIL_PASSWORD` are still fetched by `deploy.sh` and passed through `docker-compose.prod.yaml` but no longer read; they go with the IAM user once the cutover is confirmed.
+
+OpenAPI server URL changed from the hard-coded prod URL to `/`, so Swagger UI calls the origin it was loaded from. Local Swagger now hits the local app instead of prod.
+
+Testcontainers bumped to 1.21.4 (overriding Spring Boot 3.3.6's version) for Docker Engine 29, which dropped the API version older Testcontainers requests.
+
+---
+
 ## 2026-06-05 | v1.4.0
 
 Upgraded to Java 21 and Spring Boot 3.3.6. Spring Cloud AWS bumped to 3.2.1. Base Docker image switched from `eclipse-temurin:17-jre-jammy` to `eclipse-temurin:21-jre-alpine`. JVM tuned for low-memory single-instance operation: SerialGC, 256 MB heap cap, 256k stack per thread. Virtual threads enabled. `flyway-database-postgresql` added — required for Flyway 10.x compatibility with Postgres 16 on Boot 3.3.x.

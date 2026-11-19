@@ -45,7 +45,7 @@ Customer places order (Swagger UI)
 | Messaging         | AWS SQS (Spring Cloud AWS 3.2.1)         |
 | Storage           | AWS S3 (Spring Cloud AWS 3.2.1 / SDK v2) |
 | Database          | Postgres (prod), H2 (unit tests), Testcontainers/Postgres (integration tests) |
-| Email             | AWS SES + Thymeleaf templates            |
+| Email             | AWS SES API (Spring Cloud AWS 3.2.1) + Thymeleaf templates |
 | Testing           | JUnit 5, Mockito, Testcontainers         |
 | Infrastructure    | Terraform (see orders-infra)             |
 | CI/CD             | GitHub Actions                           |
@@ -75,14 +75,11 @@ SSM send-command → pull image → docker-compose up
 
 The pipeline is defined in `.github/workflows/deploy.yml`.
 
-### Secrets required
+### Credentials and secrets
 
-| Secret                  | Description                                         |
-| ----------------------- | --------------------------------------------------- |
-| `AWS_ACCESS_KEY_ID`     | IAM credentials for ECR push, EC2 start, SSM access |
-| `AWS_SECRET_ACCESS_KEY` | IAM credentials                                     |
+The pipeline authenticates to AWS with GitHub OIDC, assuming the `orders-deploy` role. No AWS keys are stored in GitHub. The only GitHub secret is `CODECOV_TOKEN`.
 
-Application secrets (`POSTGRES_PASSWORD`, `MAIL_USERNAME`, `MAIL_PASSWORD`) are fetched at deploy time from AWS Systems Manager Parameter Store — not stored in GitHub secrets. Instance ID is looked up dynamically by tag at deploy time.
+The application's one secret, `POSTGRES_PASSWORD`, is fetched at deploy time from AWS Systems Manager Parameter Store. Email needs no secret: the app sends through the SES API with the EC2 instance role. Instance ID is looked up dynamically by tag at deploy time.
 
 ---
 
@@ -91,9 +88,9 @@ Application secrets (`POSTGRES_PASSWORD`, `MAIL_USERNAME`, `MAIL_PASSWORD`) are 
 ### Prerequisites
 
 - Java 21
-- Docker Desktop
-- AWS CLI configured with credentials for `ap-southeast-4`
-- AWS SQS queues provisioned (see [orders-infra](https://github.com/leighwest/orders-infra))
+- Docker with the Compose plugin (Docker Engine on Linux, or Docker Desktop)
+- An AWS CLI profile with access to SQS and S3 in `ap-southeast-4` and SES in `ap-southeast-2`
+- AWS resources provisioned (see [orders-infra](https://github.com/leighwest/orders-infra))
 
 ### Setup
 
@@ -107,25 +104,30 @@ cd orders
 2. Create a `.env` file in the project root (use `.env.example` as a reference):
 
 ```
-MAIL_USERNAME=your-gmail@example.com
-POSTGRES_PASSWORD=your-postgres-password
+POSTGRES_PASSWORD=localdev
 ```
+
+The password is only used by the local Postgres container, so any value works.
 
 3. Start Postgres:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 4. Run the application with the local profile:
 
 ```bash
-./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+AWS_PROFILE=<your-profile> ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
 ```
+
+In IntelliJ, set `AWS_PROFILE` in the run configuration's environment variables and `local` as the active profile.
 
 5. Open Swagger UI: [http://localhost:8080](http://localhost:8080)
 
-The `local` profile connects to the Docker Postgres instance and uses your AWS CLI credentials (`~/.aws/credentials`) for SQS and S3 access. No AWS credentials should appear in any config file.
+The `local` profile connects to the Docker Postgres instance and uses the AWS profile named in `AWS_PROFILE` for SQS, S3 and SES. No AWS credentials should appear in any config file.
+
+**Local runs use the real SQS queues.** If the EC2 instance is running (7am–8pm), the local app and prod both consume from `order-dispatched` and can take each other's messages. Test outside those hours, or check the instance is stopped.
 
 ---
 
@@ -145,10 +147,10 @@ Once running locally, verify the full event-driven flow:
 ## Running Tests
 
 ```bash
-./mvnw test
+./mvnw clean verify
 ```
 
-Integration tests use Testcontainers and require Docker Desktop to be running. Unit and service tests use H2 in-memory and have no external dependencies.
+This is what CI runs. Integration tests use Testcontainers and require Docker to be running. Unit and service tests use H2 in-memory and have no external dependencies.
 
 | Test type      | Database               | SQS                  |
 | -------------- | ---------------------- | -------------------- |
@@ -175,6 +177,8 @@ Integration tests use Testcontainers and require Docker Desktop to be running. U
 | S3 staging for deploy artefacts      | Replaces SCP — runner uploads, EC2 pulls via instance role. No SSH needed                   |
 | Dynamic instance ID lookup           | Looked up by tag at deploy time — no static secret to update when instance is recreated     |
 | Nginx HTTP-only                      | CloudFront terminates SSL — Nginx just proxies to Spring Boot on port 80. No cert paths needed |
+| SES API over SES SMTP                | SMTP needs a static username and password, which only an IAM user can provide. The API accepts the instance role's temporary credentials, so no email credential is stored anywhere |
+| Relative OpenAPI server URL (`/`)    | Swagger UI calls the origin it was loaded from: local Swagger hits local, prod Swagger hits prod over HTTPS |
 
 ---
 
