@@ -2,6 +2,12 @@
 
 ---
 
+## 2026-11-21
+
+SMTP credentials removed. `deploy.sh` no longer fetches `orders_ses_smtp_username`/`_password` from SSM, and `docker-compose.prod.yaml` no longer passes `MAIL_USERNAME`/`MAIL_PASSWORD` to the container. The parameters, the instance role's grant to read them and the `orders-ses-smtp-user` IAM user and key are deleted (orders-infra). The email path now holds no stored credentials.
+
+---
+
 ## 2026-11-19 
 
 Email now goes through the SES API instead of the SES SMTP interface. `spring-cloud-aws-starter-ses` supplies a `JavaMailSender` backed by `SendRawEmail`, so `EmailService` is unchanged; `spring-boot-starter-mail` stays for Jakarta Mail and `MimeMessageHelper`. Credentials come from the default AWS chain (the EC2 instance role in prod, an AWS profile locally), so the app no longer needs the `orders-ses-smtp-user` IAM user or its SMTP password. `spring.mail.*` removed from both profiles (SES SMTP in prod, Gmail SMTP locally) and `spring.cloud.aws.ses.region=ap-southeast-2` added, since SES is in Sydney while everything else is in Melbourne. The matching IAM grant (`ses:SendEmail` and `ses:SendRawEmail` on the `cupcake-orders@leighwest.dev` identity) and the IMDS hop limit the container needs to reach the role are in orders-infra. `MAIL_USERNAME`/`MAIL_PASSWORD` are still fetched by `deploy.sh` and passed through `docker-compose.prod.yaml` but no longer read; they go with the IAM user once the cutover is confirmed.
