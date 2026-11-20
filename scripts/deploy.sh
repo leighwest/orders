@@ -14,8 +14,6 @@ aws ecr get-login-password --region $REGION | docker login --username AWS --pass
 
 # Fetch secrets from SSM
 export POSTGRES_PASSWORD=$(aws ssm get-parameter --name orders_postgres_password --with-decryption --query Parameter.Value --output text --region $REGION)
-export MAIL_USERNAME=$(aws ssm get-parameter --name orders_ses_smtp_username --with-decryption --query Parameter.Value --output text --region $REGION)
-export MAIL_PASSWORD=$(aws ssm get-parameter --name orders_ses_smtp_password --with-decryption --query Parameter.Value --output text --region $REGION)
 export ORDERS_IMAGE=$REGISTRY/orders:latest
 
 # Deploy
